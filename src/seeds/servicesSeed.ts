@@ -1,7 +1,7 @@
 import { getDb } from "../database/db.js";
 
 export async function seedServices() {
-  const db = await openDb();
+  const db = await getDb();
 
   const quantidade = await db.get("SELECT COUNT(*) as total FROM servicos");
 
