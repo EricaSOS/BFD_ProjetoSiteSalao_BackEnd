@@ -12,7 +12,7 @@
   },
   "license": "ISC",
   "author": "Erica Santos Oliveira da Silva",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -29,5 +29,8 @@
     "@types/node": "^25.5.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
-  }
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  }  
 }
