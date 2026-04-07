@@ -1,4 +1,4 @@
-import { openDb } from "../database/db.js";
+import { getDb } from "../database/db.js";
 
 export async function seedServices() {
   const db = await openDb();
