@@ -1,0 +1,33 @@
+{
+  "name": "bfd_projetositesalao_backend",
+  "version": "1.0.0",
+  "description": "Projeto Residência Bolsa Futuro Digital",
+  "homepage": "https://github.com/EricaSOS/BFD_ProjetoSiteSalao_BackEnd#readme",
+  "bugs": {
+    "url": "https://github.com/EricaSOS/BFD_ProjetoSiteSalao_BackEnd/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EricaSOS/BFD_ProjetoSiteSalao_BackEnd.git"
+  },
+  "license": "ISC",
+  "author": "Erica Santos Oliveira da Silva",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
