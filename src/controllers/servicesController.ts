@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { getDb } from "../database/db.js";
 
 export async function listServices(req: Request, res: Response) {
