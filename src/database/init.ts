@@ -1,7 +1,7 @@
-import { openDb } from "./db.js";
+import { getDb } from "./db.js";
 
 export async function initDb() {
-  const db = await openDb();
+  const db = await getDb();
 
   await db.exec(`
     CREATE TABLE IF NOT EXISTS servicos (
