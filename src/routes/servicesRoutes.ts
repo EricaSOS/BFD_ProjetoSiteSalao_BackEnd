@@ -12,7 +12,7 @@ const router = Router();
 router.get("/", listServices);
 router.get("/:id", getServiceById);
 router.post("/", createService);
-router.put("/:id", updateService);
+router.patch("/:id", updateService);
 router.delete("/:id", deleteService);
 
 export default router;
