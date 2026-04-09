@@ -61,11 +61,47 @@ export async function initDb() {
       data TEXT NOT NULL,
       horario TEXT NOT NULL,
       valor REAL NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pendente',
+      status TEXT NOT NULL DEFAULT 'pending',
       mensagem_whatsapp TEXT,
       criado_em TEXT NOT NULL,
+      cancelado_em TEXT,
+      motivo_cancelamento TEXT,
       FOREIGN KEY (servico_id) REFERENCES servicos(id),
       FOREIGN KEY (profissional_id) REFERENCES profissionais(id)
+    );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS professional_schedules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      professional_id INTEGER NOT NULL,
+      day_of_week INTEGER NOT NULL,
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      FOREIGN KEY (professional_id) REFERENCES profissionais(id)
+    );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS professional_unavailable_dates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      professional_id INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
+      reason TEXT,
+      FOREIGN KEY (professional_id) REFERENCES profissionais(id)
+    );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS business_closures (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      start_time TEXT NOT NULL,
+      end_time TEXT NOT NULL,
+      reason TEXT
     );
   `);
 
