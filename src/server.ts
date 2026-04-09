@@ -1,9 +1,16 @@
 import express from "express";
 import cors from "cors";
 import { initDb } from "./database/init.js";
+
+import { seedProfessionalSchedules } from "./seeds/professionalSchedulesSeed.js";
+import { seedProfessionalUnavailableDates } from "./seeds/professionalUnavailableDatesSeed.js";
+import { seedBusinessClosures } from "./seeds/businessClosuresSeed.js";
 import { seedServices } from "./seeds/servicesSeed.js";
 import { seedProfessionals } from "./seeds/professionalsSeed.js";
+
 import servicesRoutes from "./routes/servicesRoutes.js";
+import professionalsRoutes from "./routes/professionalsRoutes.js";
+
 
 const app = express();
 
@@ -16,12 +23,15 @@ app.get("/", (req, res) => {
 
 
 app.use("/services", servicesRoutes);
-
+app.use(professionalsRoutes);
 
 initDb()
   .then(async () => {
     await seedServices();
     await seedProfessionals();
+    await seedProfessionalSchedules();
+    await seedProfessionalUnavailableDates();
+    await seedBusinessClosures();
 
     app.listen(3000, () => {
       console.log("Server running at http://localhost:3000");
