@@ -10,7 +10,7 @@ import { seedProfessionals } from "./seeds/professionalsSeed.js";
 
 import servicesRoutes from "./routes/servicesRoutes.js";
 import professionalsRoutes from "./routes/professionalsRoutes.js";
-
+import appointmentsRoutes from "./routes/appointmentsRoutes.js";
 
 const app = express();
 
@@ -24,6 +24,7 @@ app.get("/", (req, res) => {
 
 app.use("/services", servicesRoutes);
 app.use(professionalsRoutes);
+app.use(appointmentsRoutes);
 
 initDb()
   .then(async () => {
