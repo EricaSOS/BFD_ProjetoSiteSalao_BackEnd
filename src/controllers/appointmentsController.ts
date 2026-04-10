@@ -211,7 +211,59 @@ export async function cancelAppointment(req: Request, res: Response) {
       });
     }
 
-    // 3. Atualizar status para cancelled
+    // 3. Alterar status para confirmed
+    export async function confirmAppointment(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+
+    const db = await getDb();
+
+    const appointment = await db.get(
+      `SELECT * FROM agendamentos WHERE id = ?`,
+      [id]
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ error: "Appointment not found." });
+    }
+
+    if (appointment.status === "cancelled") {
+      return res.status(400).json({
+        error: "Cancelled appointments cannot be confirmed."
+      });
+    }
+
+    if (appointment.status === "confirmed") {
+      return res.status(400).json({
+        error: "Appointment is already confirmed."
+      });
+    }
+
+    await db.run(
+      `UPDATE agendamentos
+       SET status = ?
+       WHERE id = ?`,
+      ["confirmed", id]
+    );
+
+    const updatedAppointment = await db.get(
+      `SELECT * FROM agendamentos WHERE id = ?`,
+      [id]
+    );
+
+    return res.status(200).json({
+      message: "Appointment confirmed successfully.",
+      appointment: updatedAppointment
+    });
+  } catch (error) {
+    console.error("Error confirming appointment:", error);
+    return res.status(500).json({
+      error: "Error confirming appointment."
+    });
+  }
+}
+
+    // 4. Atualizar status para cancelled
     const cancelledAt = new Date().toISOString();
 
     await db.run(
@@ -226,7 +278,7 @@ export async function cancelAppointment(req: Request, res: Response) {
       ]
     );
 
-    // 4. Buscar o registro atualizado
+    // 5. Buscar o registro atualizado
     const updatedAppointment = await db.get(
       `SELECT * FROM agendamentos WHERE id = ?`,
       [id]
