@@ -3,12 +3,14 @@ import {
   listAppointments,
   createAppointment,
   cancelAppointment,
-  confirmAppointment
+  confirmAppointment,
+  getDailySchedule
 } from "../controllers/appointmentsController.js";
 
 const router = Router();
 
 router.get("/appointments", listAppointments);
+router.get("/schedule/day", getDailySchedule);
 router.post("/appointments", createAppointment);
 router.patch("/appointments/:id/confirm", confirmAppointment);
 router.patch("/appointments/:id/cancel", cancelAppointment);

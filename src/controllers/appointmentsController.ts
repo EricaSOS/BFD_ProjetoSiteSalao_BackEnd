@@ -3,11 +3,31 @@ import { getDb } from "../database/db.js";
 
 export async function listAppointments(req: Request, res: Response) {
   try {
+    const { date, professionalId, status } = req.query;
+
     const db = await getDb();
 
-    const appointments = await db.all(
-      `SELECT * FROM agendamentos ORDER BY data, horario`
-    );
+    let query = `SELECT * FROM agendamentos WHERE 1=1`;
+    const params: any[] = [];
+
+    if (date) {
+      query += ` AND data = ?`;
+      params.push(date);
+    }
+
+    if (professionalId) {
+      query += ` AND profissional_id = ?`;
+      params.push(professionalId);
+    }
+
+    if (status) {
+      query += ` AND status = ?`;
+      params.push(status);
+    }
+
+    query += ` ORDER BY data, horario`;
+
+    const appointments = await db.all(query, params);
 
     return res.status(200).json(appointments);
   } catch (error) {
@@ -266,6 +286,67 @@ export async function cancelAppointment(req: Request, res: Response) {
     console.error("Error cancelling appointment:", error);
     return res.status(500).json({
       error: "Error cancelling appointment."
+    });
+  }
+}
+
+export async function getDailySchedule(req: Request, res: Response) {
+  try {
+    const { date } = req.query;
+
+    if (!date || typeof date !== "string") {
+      return res.status(400).json({
+        error: "The query parameter 'date' is required."
+      });
+    }
+
+    const db = await getDb();
+
+    // 1. Buscar profissionais ativos
+    const professionals = await db.all(
+      `SELECT id, nome FROM profissionais WHERE ativo = 1`
+    );
+
+    // 2. Buscar agendamentos do dia
+    const appointments = await db.all(
+      `SELECT *
+       FROM agendamentos
+       WHERE data = ?
+         AND status IN ('pending', 'confirmed')
+       ORDER BY horario`,
+      [date]
+    );
+
+    // 3. Organizar por profissional
+    const schedule = professionals.map((professional: any) => {
+      const professionalAppointments = appointments
+        .filter(
+          (appt: any) => appt.profissional_id === professional.id
+        )
+        .map((appt: any) => ({
+          id: appt.id,
+          horario: appt.horario,
+          cliente_nome: appt.cliente_nome,
+          servico_nome: appt.servico_nome,
+          status: appt.status
+        }));
+
+      return {
+        id: professional.id,
+        nome: professional.nome,
+        appointments: professionalAppointments
+      };
+    });
+
+    return res.status(200).json({
+      date,
+      professionals: schedule
+    });
+
+  } catch (error) {
+    console.error("Error fetching daily schedule:", error);
+    return res.status(500).json({
+      error: "Error fetching daily schedule."
     });
   }
 }
