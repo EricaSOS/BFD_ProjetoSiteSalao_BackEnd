@@ -5,14 +5,23 @@ export async function listServices(req: Request, res: Response) {
   try {
     const db = await getDb();
 
-    const services = await db.all(
-      "SELECT * FROM servicos WHERE ativo = 1 ORDER BY id"
+    const rows = await db.all(
+      "SELECT * FROM services WHERE is_active = 1 ORDER BY id"
     );
 
-    res.status(200).json(services);
+    const services = rows.map((service: any) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      duration: service.duration_minutes,
+      imageUrl: service.image_url
+    }));
+
+    return res.status(200).json(services);
   } catch (error) {
     console.error("Error fetching services:", error);
-    res.status(500).json({ error: "Error fetching services." });
+    return res.status(500).json({ error: "Error fetching services." });
   }
 }
 
@@ -22,7 +31,7 @@ export async function getServiceById(req: Request, res: Response) {
     const db = await getDb();
 
     const service = await db.get(
-      "SELECT * FROM servicos WHERE id = ? AND ativo = 1",
+      "SELECT * FROM services WHERE id = ? AND is_active = 1",
       [id]
     );
 
@@ -30,52 +39,66 @@ export async function getServiceById(req: Request, res: Response) {
       return res.status(404).json({ error: "Service not found." });
     }
 
-    res.status(200).json(service);
+    return res.status(200).json({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      duration: service.duration_minutes,
+      imageUrl: service.image_url
+    });
   } catch (error) {
     console.error("Error fetching service by id:", error);
-    res.status(500).json({ error: "Error fetching service." });
+    return res.status(500).json({ error: "Error fetching service." });
   }
 }
 
 export async function createService(req: Request, res: Response) {
   try {
-    const { nome, descricao, imagem_url, preco, duracao_minutos } = req.body;
+    const { name, description, imageUrl, price, duration } = req.body;
 
-    if (!nome || !preco || !duracao_minutos) {
+    if (!name || !price || !duration) {
       return res.status(400).json({
-        error: "Fields nome, preco and duracao_minutos are required."
+        error: "Fields name, price and duration are required."
       });
     }
 
     const db = await getDb();
 
     const result = await db.run(
-      `INSERT INTO servicos (nome, descricao, imagem_url, preco, duracao_minutos, ativo)
+      `INSERT INTO services (name, description, image_url, price, duration_minutes, is_active)
        VALUES (?, ?, ?, ?, ?, 1)`,
-      [nome, descricao ?? null, imagem_url ?? null, preco, duracao_minutos]
+      [name, description ?? null, imageUrl ?? null, price, duration]
     );
 
     const newService = await db.get(
-      "SELECT * FROM servicos WHERE id = ?",
+      "SELECT * FROM services WHERE id = ?",
       [result.lastID]
     );
 
-    res.status(201).json(newService);
+    return res.status(201).json({
+      id: newService.id,
+      name: newService.name,
+      description: newService.description,
+      price: newService.price,
+      duration: newService.duration_minutes,
+      imageUrl: newService.image_url
+    });
   } catch (error) {
     console.error("Error creating service:", error);
-    res.status(500).json({ error: "Error creating service." });
+    return res.status(500).json({ error: "Error creating service." });
   }
 }
 
 export async function updateService(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const { nome, descricao, imagem_url, preco, duracao_minutos } = req.body;
+    const { name, description, imageUrl, price, duration } = req.body;
 
     const db = await getDb();
 
     const existingService = await db.get(
-      "SELECT * FROM servicos WHERE id = ? AND ativo = 1",
+      "SELECT * FROM services WHERE id = ? AND is_active = 1",
       [id]
     );
 
@@ -84,28 +107,35 @@ export async function updateService(req: Request, res: Response) {
     }
 
     await db.run(
-      `UPDATE servicos
-       SET nome = ?, descricao = ?, imagem_url = ?, preco = ?, duracao_minutos = ?
+      `UPDATE services
+       SET name = ?, description = ?, image_url = ?, price = ?, duration_minutes = ?
        WHERE id = ?`,
       [
-        nome ?? existingService.nome,
-        descricao ?? existingService.descricao,
-        imagem_url ?? existingService.imagem_url,
-        preco ?? existingService.preco,
-        duracao_minutos ?? existingService.duracao_minutos,
+        name ?? existingService.name,
+        description ?? existingService.description,
+        imageUrl ?? existingService.image_url,
+        price ?? existingService.price,
+        duration ?? existingService.duration_minutes,
         id
       ]
     );
 
     const updatedService = await db.get(
-      "SELECT * FROM servicos WHERE id = ?",
+      "SELECT * FROM services WHERE id = ?",
       [id]
     );
 
-    res.status(200).json(updatedService);
+    return res.status(200).json({
+      id: updatedService.id,
+      name: updatedService.name,
+      description: updatedService.description,
+      price: updatedService.price,
+      duration: updatedService.duration_minutes,
+      imageUrl: updatedService.image_url
+    });
   } catch (error) {
     console.error("Error updating service:", error);
-    res.status(500).json({ error: "Error updating service." });
+    return res.status(500).json({ error: "Error updating service." });
   }
 }
 
@@ -115,7 +145,7 @@ export async function deleteService(req: Request, res: Response) {
     const db = await getDb();
 
     const existingService = await db.get(
-      "SELECT * FROM servicos WHERE id = ? AND ativo = 1",
+      "SELECT * FROM services WHERE id = ? AND is_active = 1",
       [id]
     );
 
@@ -124,13 +154,13 @@ export async function deleteService(req: Request, res: Response) {
     }
 
     await db.run(
-      "UPDATE servicos SET ativo = 0 WHERE id = ?",
+      "UPDATE services SET is_active = 0 WHERE id = ?",
       [id]
     );
 
-    res.status(200).json({ message: "Service deleted successfully." });
+    return res.status(200).json({ message: "Service deleted successfully." });
   } catch (error) {
     console.error("Error deleting service:", error);
-    res.status(500).json({ error: "Error deleting service." });
+    return res.status(500).json({ error: "Error deleting service." });
   }
 }
