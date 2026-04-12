@@ -3,7 +3,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "Beauty Salon Booking API",
+    title: "Projeto Salão API",
     version: "1.0.0",
     description: "API for beauty salon booking system"
   },
