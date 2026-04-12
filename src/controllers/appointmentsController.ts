@@ -7,16 +7,16 @@ export async function listAppointments(req: Request, res: Response) {
 
     const db = await getDb();
 
-    let query = `SELECT * FROM agendamentos WHERE 1=1`;
+    let query = `SELECT * FROM appointments WHERE 1=1`;
     const params: any[] = [];
 
     if (date) {
-      query += ` AND data = ?`;
+      query += ` AND date = ?`;
       params.push(date);
     }
 
     if (professionalId) {
-      query += ` AND profissional_id = ?`;
+      query += ` AND professional_id = ?`;
       params.push(professionalId);
     }
 
@@ -25,7 +25,7 @@ export async function listAppointments(req: Request, res: Response) {
       params.push(status);
     }
 
-    query += ` ORDER BY data, horario`;
+    query += ` ORDER BY date, time`;
 
     const appointments = await db.all(query, params);
 
@@ -41,34 +41,34 @@ export async function listAppointments(req: Request, res: Response) {
 export async function createAppointment(req: Request, res: Response) {
   try {
     const {
-      cliente_nome,
-      cliente_telefone,
-      cliente_email,
-      servico_id,
-      profissional_id,
-      data,
-      horario
+      clientName,
+      clientPhone,
+      clientEmail,
+      serviceId,
+      professionalId,
+      date,
+      time
     } = req.body;
 
     if (
-      !cliente_nome ||
-      !cliente_telefone ||
-      !servico_id ||
-      !profissional_id ||
-      !data ||
-      !horario
+      !clientName ||
+      !clientPhone ||
+      !serviceId ||
+      !professionalId ||
+      !date ||
+      !time
     ) {
       return res.status(400).json({
         error:
-          "Required fields: cliente_nome, cliente_telefone, servico_id, profissional_id, data, horario."
+          "Required fields: clientName, clientPhone, serviceId, professionalId, date, time."
       });
     }
 
     const db = await getDb();
 
     const service = await db.get(
-      `SELECT * FROM servicos WHERE id = ? AND ativo = 1`,
-      [servico_id]
+      `SELECT * FROM services WHERE id = ? AND is_active = 1`,
+      [serviceId]
     );
 
     if (!service) {
@@ -76,8 +76,8 @@ export async function createAppointment(req: Request, res: Response) {
     }
 
     const professional = await db.get(
-      `SELECT * FROM profissionais WHERE id = ? AND ativo = 1`,
-      [profissional_id]
+      `SELECT * FROM professionals WHERE id = ? AND is_active = 1`,
+      [professionalId]
     );
 
     if (!professional) {
@@ -85,9 +85,9 @@ export async function createAppointment(req: Request, res: Response) {
     }
 
     const professionalService = await db.get(
-      `SELECT * FROM profissional_servico
-       WHERE profissional_id = ? AND servico_id = ?`,
-      [profissional_id, servico_id]
+      `SELECT * FROM professional_services
+       WHERE professional_id = ? AND service_id = ?`,
+      [professionalId, serviceId]
     );
 
     if (!professionalService) {
@@ -97,12 +97,12 @@ export async function createAppointment(req: Request, res: Response) {
     }
 
     const conflictingAppointment = await db.get(
-      `SELECT * FROM agendamentos
-       WHERE profissional_id = ?
-         AND data = ?
-         AND horario = ?
+      `SELECT * FROM appointments
+       WHERE professional_id = ?
+         AND date = ?
+         AND time = ?
          AND status IN ('pending', 'confirmed')`,
-      [profissional_id, data, horario]
+      [professionalId, date, time]
     );
 
     if (conflictingAppointment) {
@@ -115,46 +115,46 @@ export async function createAppointment(req: Request, res: Response) {
 `Olá! Gostaria de confirmar meu agendamento.
 
 *Detalhes do Agendamento*
-Serviço: ${service.nome}
-Profissional: ${professional.nome}
-Data: ${data}
-Horário: ${horario}
-Valor: R$ ${service.preco}
+Serviço: ${service.name}
+Profissional: ${professional.name}
+Data: ${date}
+Horário: ${time}
+Valor: R$ ${service.price}
 
 *Meus Dados*
-Nome: ${cliente_nome}
-Telefone: ${cliente_telefone}
-E-mail: ${cliente_email ?? "Não informado"}`;
+Nome: ${clientName}
+Telefone: ${clientPhone}
+E-mail: ${clientEmail ?? "Não informado"}`;
 
     const createdAt = new Date().toISOString();
 
     const result = await db.run(
-      `INSERT INTO agendamentos (
-        cliente_nome,
-        cliente_telefone,
-        cliente_email,
-        servico_id,
-        profissional_id,
-        servico_nome,
-        profissional_nome,
-        data,
-        horario,
-        valor,
+      `INSERT INTO appointments (
+        client_name,
+        client_phone,
+        client_email,
+        service_id,
+        professional_id,
+        service_name,
+        professional_name,
+        date,
+        time,
+        price,
         status,
-        mensagem_whatsapp,
-        criado_em
+        whatsapp_message,
+        created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        cliente_nome,
-        cliente_telefone,
-        cliente_email ?? null,
-        servico_id,
-        profissional_id,
-        service.nome,
-        professional.nome,
-        data,
-        horario,
-        service.preco,
+        clientName,
+        clientPhone,
+        clientEmail ?? null,
+        serviceId,
+        professionalId,
+        service.name,
+        professional.name,
+        date,
+        time,
+        service.price,
         "pending",
         whatsappMessage,
         createdAt
@@ -162,7 +162,7 @@ E-mail: ${cliente_email ?? "Não informado"}`;
     );
 
     const newAppointment = await db.get(
-      `SELECT * FROM agendamentos WHERE id = ?`,
+      `SELECT * FROM appointments WHERE id = ?`,
       [result.lastID]
     );
 
@@ -170,11 +170,11 @@ E-mail: ${cliente_email ?? "Não informado"}`;
       message: "Appointment created successfully.",
       appointment: newAppointment,
       summary: {
-        serviceName: service.nome,
-        professionalName: professional.nome,
-        date: data,
-        time: horario,
-        price: service.preco
+        serviceName: service.name,
+        professionalName: professional.name,
+        date,
+        time,
+        price: service.price
       },
       whatsappMessage
     });
@@ -193,7 +193,7 @@ export async function confirmAppointment(req: Request, res: Response) {
     const db = await getDb();
 
     const appointment = await db.get(
-      `SELECT * FROM agendamentos WHERE id = ?`,
+      `SELECT * FROM appointments WHERE id = ?`,
       [id]
     );
 
@@ -214,14 +214,14 @@ export async function confirmAppointment(req: Request, res: Response) {
     }
 
     await db.run(
-      `UPDATE agendamentos
+      `UPDATE appointments
        SET status = ?
        WHERE id = ?`,
       ["confirmed", id]
     );
 
     const updatedAppointment = await db.get(
-      `SELECT * FROM agendamentos WHERE id = ?`,
+      `SELECT * FROM appointments WHERE id = ?`,
       [id]
     );
 
@@ -240,12 +240,12 @@ export async function confirmAppointment(req: Request, res: Response) {
 export async function cancelAppointment(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const { motivo_cancelamento } = req.body;
+    const { cancellationReason } = req.body;
 
     const db = await getDb();
 
     const appointment = await db.get(
-      `SELECT * FROM agendamentos WHERE id = ?`,
+      `SELECT * FROM appointments WHERE id = ?`,
       [id]
     );
 
@@ -262,19 +262,19 @@ export async function cancelAppointment(req: Request, res: Response) {
     const cancelledAt = new Date().toISOString();
 
     await db.run(
-      `UPDATE agendamentos
-       SET status = ?, cancelado_em = ?, motivo_cancelamento = ?
+      `UPDATE appointments
+       SET status = ?, cancelled_at = ?, cancellation_reason = ?
        WHERE id = ?`,
       [
         "cancelled",
         cancelledAt,
-        motivo_cancelamento ?? null,
+        cancellationReason ?? null,
         id
       ]
     );
 
     const updatedAppointment = await db.get(
-      `SELECT * FROM agendamentos WHERE id = ?`,
+      `SELECT * FROM appointments WHERE id = ?`,
       [id]
     );
 
@@ -302,38 +302,35 @@ export async function getDailySchedule(req: Request, res: Response) {
 
     const db = await getDb();
 
-    // 1. Buscar profissionais ativos
     const professionals = await db.all(
-      `SELECT id, nome FROM profissionais WHERE ativo = 1`
+      `SELECT id, name FROM professionals WHERE is_active = 1`
     );
 
-    // 2. Buscar agendamentos do dia
     const appointments = await db.all(
       `SELECT *
-       FROM agendamentos
-       WHERE data = ?
+       FROM appointments
+       WHERE date = ?
          AND status IN ('pending', 'confirmed')
-       ORDER BY horario`,
+       ORDER BY time`,
       [date]
     );
 
-    // 3. Organizar por profissional
     const schedule = professionals.map((professional: any) => {
       const professionalAppointments = appointments
         .filter(
-          (appt: any) => appt.profissional_id === professional.id
+          (appointment: any) => appointment.professional_id === professional.id
         )
-        .map((appt: any) => ({
-          id: appt.id,
-          horario: appt.horario,
-          cliente_nome: appt.cliente_nome,
-          servico_nome: appt.servico_nome,
-          status: appt.status
+        .map((appointment: any) => ({
+          id: appointment.id,
+          time: appointment.time,
+          clientName: appointment.client_name,
+          serviceName: appointment.service_name,
+          status: appointment.status
         }));
 
       return {
         id: professional.id,
-        nome: professional.nome,
+        name: professional.name,
         appointments: professionalAppointments
       };
     });
@@ -342,7 +339,6 @@ export async function getDailySchedule(req: Request, res: Response) {
       date,
       professionals: schedule
     });
-
   } catch (error) {
     console.error("Error fetching daily schedule:", error);
     return res.status(500).json({
