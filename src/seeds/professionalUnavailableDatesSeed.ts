@@ -13,7 +13,7 @@ export async function seedProfessionalUnavailableDates() {
   }
 
   const ricardo = await db.get(
-    "SELECT id FROM profissionais WHERE nome = ?",
+    "SELECT id FROM professionals WHERE name = ?",
     ["Ricardo Costa"]
   );
 
