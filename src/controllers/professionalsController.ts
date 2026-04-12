@@ -12,7 +12,7 @@ export async function listProfessionalsByService(
     const db = await getDb();
 
     const service = await db.get(
-      "SELECT * FROM servicos WHERE id = ? AND ativo = 1",
+      "SELECT * FROM services WHERE id = ? AND is_active = 1",
       [id]
     );
 
@@ -20,16 +20,25 @@ export async function listProfessionalsByService(
       return res.status(404).json({ error: "Service not found." });
     }
 
-    const professionals = await db.all(
+    const rows = await db.all(
       `SELECT p.*
-       FROM profissionais p
-       INNER JOIN profissional_servico ps
-         ON p.id = ps.profissional_id
-       WHERE ps.servico_id = ?
-         AND p.ativo = 1
-       ORDER BY p.nome`,
+       FROM professionals p
+       INNER JOIN professional_services ps
+         ON p.id = ps.professional_id
+       WHERE ps.service_id = ?
+         AND p.is_active = 1
+       ORDER BY p.name`,
       [id]
     );
+
+    const professionals = rows.map((professional: any) => ({
+      id: professional.id,
+      name: professional.name,
+      photo: professional.photo_url,
+      specialty: professional.specialty,
+      rating: professional.rating,
+      whatsappPhone: professional.whatsapp_phone
+    }));
 
     return res.status(200).json(professionals);
   } catch (error) {
@@ -57,7 +66,7 @@ export async function getAvailableTimesByProfessional(
     const db = await getDb();
 
     const professional = await db.get(
-      "SELECT * FROM profissionais WHERE id = ? AND ativo = 1",
+      "SELECT * FROM professionals WHERE id = ? AND is_active = 1",
       [id]
     );
 
@@ -110,16 +119,16 @@ export async function getAvailableTimesByProfessional(
     );
 
     const appointments = await db.all(
-      `SELECT horario
-       FROM agendamentos
-       WHERE profissional_id = ?
-         AND data = ?
+      `SELECT time
+       FROM appointments
+       WHERE professional_id = ?
+         AND date = ?
          AND status IN ('pending', 'confirmed')`,
       [id, date]
     );
 
     const occupiedTimes = appointments.map(
-      (appointment: { horario: string }) => appointment.horario
+      (appointment: { time: string }) => appointment.time
     );
 
     let availableTimes = allTimeSlots.filter(
