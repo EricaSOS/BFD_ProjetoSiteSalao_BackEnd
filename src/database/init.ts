@@ -4,70 +4,70 @@ export async function initDb() {
   const db = await getDb();
 
   await db.exec(`
-    CREATE TABLE IF NOT EXISTS servicos (
+    CREATE TABLE IF NOT EXISTS services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nome TEXT NOT NULL,
-      descricao TEXT,
-      imagem_url TEXT,
-      preco REAL NOT NULL,
-      duracao_minutos INTEGER NOT NULL,
-      ativo INTEGER NOT NULL DEFAULT 1
+      name TEXT NOT NULL,
+      description TEXT,
+      image_url TEXT,
+      price REAL NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1
     );
   `);
 
   await db.exec(`
-    CREATE TABLE IF NOT EXISTS profissionais (
+    CREATE TABLE IF NOT EXISTS professionals (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nome TEXT NOT NULL,
-      foto_url TEXT,
-      telefone_whatsapp TEXT NOT NULL,
-      especialidade TEXT,
-      nota REAL DEFAULT 0,
-      ativo INTEGER NOT NULL DEFAULT 1
+      name TEXT NOT NULL,
+      photo_url TEXT,
+      whatsapp_phone TEXT NOT NULL,
+      specialty TEXT,
+      rating REAL DEFAULT 0,
+      is_active INTEGER NOT NULL DEFAULT 1
     );
   `);
 
   await db.exec(`
-    CREATE TABLE IF NOT EXISTS profissional_servico (
+    CREATE TABLE IF NOT EXISTS professional_services (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      profissional_id INTEGER NOT NULL,
-      servico_id INTEGER NOT NULL,
-      FOREIGN KEY (profissional_id) REFERENCES profissionais(id),
-      FOREIGN KEY (servico_id) REFERENCES servicos(id)
+      professional_id INTEGER NOT NULL,
+      service_id INTEGER NOT NULL,
+      FOREIGN KEY (professional_id) REFERENCES professionals(id),
+      FOREIGN KEY (service_id) REFERENCES services(id)
     );
   `);
 
   await db.exec(`
-    CREATE TABLE IF NOT EXISTS galeria (
+    CREATE TABLE IF NOT EXISTS gallery (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      imagem_url TEXT NOT NULL,
-      titulo TEXT,
-      descricao TEXT,
-      ordem INTEGER DEFAULT 0,
-      ativo INTEGER NOT NULL DEFAULT 1
+      image_url TEXT NOT NULL,
+      title TEXT,
+      description TEXT,
+      display_order INTEGER DEFAULT 0,
+      is_active INTEGER NOT NULL DEFAULT 1
     );
   `);
 
   await db.exec(`
-    CREATE TABLE IF NOT EXISTS agendamentos (
+    CREATE TABLE IF NOT EXISTS appointments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      cliente_nome TEXT NOT NULL,
-      cliente_telefone TEXT NOT NULL,
-      cliente_email TEXT,
-      servico_id INTEGER NOT NULL,
-      profissional_id INTEGER NOT NULL,
-      servico_nome TEXT NOT NULL,
-      profissional_nome TEXT NOT NULL,
-      data TEXT NOT NULL,
-      horario TEXT NOT NULL,
-      valor REAL NOT NULL,
+      client_name TEXT NOT NULL,
+      client_phone TEXT NOT NULL,
+      client_email TEXT,
+      service_id INTEGER NOT NULL,
+      professional_id INTEGER NOT NULL,
+      service_name TEXT NOT NULL,
+      professional_name TEXT NOT NULL,
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      price REAL NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
-      mensagem_whatsapp TEXT,
-      criado_em TEXT NOT NULL,
-      cancelado_em TEXT,
-      motivo_cancelamento TEXT,
-      FOREIGN KEY (servico_id) REFERENCES servicos(id),
-      FOREIGN KEY (profissional_id) REFERENCES profissionais(id)
+      whatsapp_message TEXT,
+      created_at TEXT NOT NULL,
+      cancelled_at TEXT,
+      cancellation_reason TEXT,
+      FOREIGN KEY (service_id) REFERENCES services(id),
+      FOREIGN KEY (professional_id) REFERENCES professionals(id)
     );
   `);
 
@@ -79,7 +79,7 @@ export async function initDb() {
       start_time TEXT NOT NULL,
       end_time TEXT NOT NULL,
       is_active INTEGER NOT NULL DEFAULT 1,
-      FOREIGN KEY (professional_id) REFERENCES profissionais(id)
+      FOREIGN KEY (professional_id) REFERENCES professionals(id)
     );
   `);
 
@@ -91,7 +91,7 @@ export async function initDb() {
       start_time TEXT NOT NULL,
       end_time TEXT NOT NULL,
       reason TEXT,
-      FOREIGN KEY (professional_id) REFERENCES profissionais(id)
+      FOREIGN KEY (professional_id) REFERENCES professionals(id)
     );
   `);
 
@@ -105,5 +105,5 @@ export async function initDb() {
     );
   `);
 
-  console.log("Banco de dados inicializado com sucesso.");
+  console.log("Database initialized successfully.");
 }
