@@ -166,17 +166,23 @@ E-mail: ${clientEmail ?? "Não informado"}`;
       [result.lastID]
     );
 
+    const whatsappLink = `https://wa.me/${professional.whatsapp_phone}?text=${encodeURIComponent(whatsappMessage)}`;
+
     return res.status(201).json({
       message: "Appointment created successfully.",
       appointment: newAppointment,
       summary: {
         serviceName: service.name,
         professionalName: professional.name,
+        professionalPhoto: professional.photo_url,
+        professionalPhone: professional.whatsapp_phone,
         date,
         time,
-        price: service.price
+        price: service.price,
+        duration: service.duration_minutes
       },
-      whatsappMessage
+      whatsappMessage,
+      whatsappLink
     });
   } catch (error) {
     console.error("Error creating appointment:", error);
