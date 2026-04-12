@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 
 
 app.use("/services", servicesRoutes);
-app.use(professionalsRoutes);
+app.use("/professionals", professionalsRoutes);
 app.use(appointmentsRoutes);
 
 initDb()
