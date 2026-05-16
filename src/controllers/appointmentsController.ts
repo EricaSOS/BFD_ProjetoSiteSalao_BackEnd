@@ -111,20 +111,30 @@ export async function createAppointment(req: Request, res: Response) {
       });
     }
 
+    if (!process.env.RECEPTION_WHATSAPP_PHONE) {
+      throw new Error("RECEPTION_WHATSAPP_PHONE is not configured.");
+    }
+
+    const receptionWhatsappPhone = process.env.RECEPTION_WHATSAPP_PHONE;
+
+    const formattedDate = date.split("-").reverse().join("/");
+    
     const whatsappMessage =
-`Olá! Gostaria de confirmar meu agendamento.
+`Olá Cia da Beleza! Gostaria de confirmar meu agendamento:
+    
+*Detalhes do Agendamento:*
+💇‍♂️ Serviço: ${service.name}
+👤 Profissional: ${professional.name}
+📅 Data: ${formattedDate}
+⏰ Horário: ${time}
+💰 Valor: R$ ${service.price}
 
-*Detalhes do Agendamento*
-Serviço: ${service.name}
-Profissional: ${professional.name}
-Data: ${date}
-Horário: ${time}
-Valor: R$ ${service.price}
-
-*Meus Dados*
+*Meus Dados:*
 Nome: ${clientName}
 Telefone: ${clientPhone}
 E-mail: ${clientEmail ?? "Não informado"}`;
+
+    const whatsappLink = `https://wa.me/${receptionWhatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
     const createdAt = new Date().toISOString();
 
@@ -165,8 +175,6 @@ E-mail: ${clientEmail ?? "Não informado"}`;
       `SELECT * FROM appointments WHERE id = ?`,
       [result.lastID]
     );
-
-    const whatsappLink = `https://wa.me/${professional.whatsapp_phone}?text=${encodeURIComponent(whatsappMessage)}`;
 
     return res.status(201).json({
       message: "Appointment created successfully.",
