@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { initDb } from "./database/init.js";
 
 import { seedProfessionalSchedules } from "./seeds/professionalSchedulesSeed.js";
@@ -18,8 +20,29 @@ import { swaggerSpec } from "./docs/swagger.js";
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+const allowedOrigin = process.env.FRONTEND_URL ?? "http://localhost:5173";
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many requests. Please try again later."
+  }
+});
+
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: allowedOrigin
+  })
+);
+
+app.use(express.json({ limit: "10kb" }));
+
+app.use(apiLimiter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
