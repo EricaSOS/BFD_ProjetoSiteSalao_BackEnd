@@ -127,7 +127,7 @@ export async function createAppointment(req: Request, res: Response) {
 👤 Profissional: ${professional.name}
 📅 Data: ${formattedDate}
 ⏰ Horário: ${time}
-💰 Valor: R$ ${service.price}
+💰 Valor: R$ ${Number(service.price).toFixed(2).replace(".", ",")}
 
 *Meus Dados:*
 Nome: ${clientName}
