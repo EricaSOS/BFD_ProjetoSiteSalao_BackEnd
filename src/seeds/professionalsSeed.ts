@@ -30,7 +30,7 @@ export async function seedProfessionals() {
      VALUES (?, ?, ?, ?, ?, ?)`,
     [
       "Ana Beatriz",
-      "/images/professionals/ana.jpg",
+      "/images/professionals/ana_manicure.jpg",
       "5591999992222",
       "Coloração e hidratação",
       4.8,
