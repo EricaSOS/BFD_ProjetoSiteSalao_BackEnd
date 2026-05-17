@@ -14,6 +14,7 @@ import { seedProfessionals } from "./seeds/professionalsSeed.js";
 import servicesRoutes from "./routes/servicesRoutes.js";
 import professionalsRoutes from "./routes/professionalsRoutes.js";
 import appointmentsRoutes from "./routes/appointmentsRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
@@ -54,6 +55,7 @@ app.get("/", (req, res) => {
 app.use("/services", servicesRoutes);
 app.use("/professionals", professionalsRoutes);
 app.use(appointmentsRoutes);
+app.use(authRoutes);
 
 initDb()
   .then(async () => {
