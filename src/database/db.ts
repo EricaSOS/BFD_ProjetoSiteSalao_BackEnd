@@ -1,17 +1,20 @@
-import sqlite3 from "sqlite3";
-import { open, Database } from "sqlite";
+import pg from "pg";
 
-let dbInstance: Database | null = null;
+const { Pool } = pg;
+
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not configured.");
+}
+
+const pool = new Pool({
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 export async function getDb() {
-  if (!dbInstance) {
-    dbInstance = await open({
-      filename: "./database.sqlite",
-      driver: sqlite3.Database
-    });
-
-    console.log("Conexão com banco criada.");
-  }
-
-  return dbInstance;
+  return pool;
 }
