@@ -21,7 +21,7 @@ import { swaggerSpec } from "./docs/swagger.js";
 
 const app = express();
 
-const allowedOrigin = process.env.FRONTEND_URL ?? "http://localhost:5173";
+const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL].filter(Boolean);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -37,7 +37,13 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: allowedOrigin
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    }
   })
 );
 
@@ -57,6 +63,21 @@ app.use("/professionals", professionalsRoutes);
 app.use(appointmentsRoutes);
 app.use(authRoutes);
 
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({
+      error: "Origin not allowed."
+    });
+  }
+
+  return res.status(500).json({
+    error:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error."
+        : err.message
+  });
+});
+
 initDb()
   .then(async () => {
     await seedServices();
@@ -65,8 +86,10 @@ initDb()
     await seedProfessionalUnavailableDates();
     await seedBusinessClosures();
 
-    app.listen(3000, () => {
-      console.log("Server running at http://localhost:3000");
+    const PORT = process.env.PORT ?? 3000;
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((error) => {
