@@ -21,7 +21,7 @@ export async function seedProfessionals() {
       "5591999991111",
       "Cortes e barba",
       4.9,
-      1
+      true
     ]
   );
 
@@ -34,7 +34,7 @@ export async function seedProfessionals() {
       "5591999992222",
       "Coloração e hidratação",
       4.8,
-      1
+      true
     ]
   );
 
@@ -47,7 +47,7 @@ export async function seedProfessionals() {
       "5591999993333",
       "Manicure e pedicure",
       4.7,
-      1
+      true
     ]
   );
 
@@ -89,7 +89,8 @@ export async function seedProfessionals() {
   if (ricardo && corteFeminino) {
     await db.run(
       `INSERT INTO professional_services (professional_id, service_id)
-       VALUES (?, ?)`,
+       VALUES (?, ?)
+       ON CONFLICT (professional_id, service_id) DO NOTHING`,
       [ricardo.id, corteFeminino.id]
     );
   }
@@ -97,7 +98,8 @@ export async function seedProfessionals() {
   if (ricardo && escova) {
     await db.run(
       `INSERT INTO professional_services (professional_id, service_id)
-       VALUES (?, ?)`,
+       VALUES (?, ?)
+       ON CONFLICT (professional_id, service_id) DO NOTHING`,
       [ricardo.id, escova.id]
     );
   }
@@ -105,7 +107,8 @@ export async function seedProfessionals() {
   if (ana && escova) {
     await db.run(
       `INSERT INTO professional_services (professional_id, service_id)
-       VALUES (?, ?)`,
+       VALUES (?, ?)
+       ON CONFLICT (professional_id, service_id) DO NOTHING`,
       [ana.id, escova.id]
     );
   }
@@ -113,7 +116,8 @@ export async function seedProfessionals() {
   if (ana && hidratacao) {
     await db.run(
       `INSERT INTO professional_services (professional_id, service_id)
-       VALUES (?, ?)`,
+       VALUES (?, ?)
+       ON CONFLICT (professional_id, service_id) DO NOTHING`,
       [ana.id, hidratacao.id]
     );
   }
@@ -121,7 +125,8 @@ export async function seedProfessionals() {
   if (juliana && manicure) {
     await db.run(
       `INSERT INTO professional_services (professional_id, service_id)
-       VALUES (?, ?)`,
+       VALUES (?, ?)
+       ON CONFLICT (professional_id, service_id) DO NOTHING`,
       [juliana.id, manicure.id]
     );
   }

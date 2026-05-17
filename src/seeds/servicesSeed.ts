@@ -19,7 +19,7 @@ export async function seedServices() {
       "/images/services/corte-feminino.jpg",
       80.0,
       60,
-      1
+      true
     ]
   );
 
@@ -32,7 +32,7 @@ export async function seedServices() {
       "/images/services/escova.jpg",
       50.0,
       40,
-      1
+      true
     ]
   );
 
@@ -45,7 +45,7 @@ export async function seedServices() {
       "/images/services/manicure.jpg",
       35.0,
       45,
-      1
+      true
     ]
   );
 
@@ -58,7 +58,7 @@ export async function seedServices() {
       "/images/services/hidratacao.jpg",
       70.0,
       50,
-      1
+      true
     ]
   );
 
