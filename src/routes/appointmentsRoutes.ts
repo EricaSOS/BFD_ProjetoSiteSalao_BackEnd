@@ -41,7 +41,7 @@ const router = Router();
  *         description: Lista de agendamentos retornada com sucesso
  *       401:
  *         description: Token ausente, inválido ou expirado
- * /
+ */
 
 /**
  * @swagger
@@ -112,7 +112,7 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Agendamento confirmado com sucesso
- *      400:
+ *       400:
  *         description: ID inválido, agendamento já confirmado ou cancelado
  *       401:
  *         description: Token ausente, inválido ou expirado
