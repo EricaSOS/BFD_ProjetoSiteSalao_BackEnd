@@ -12,6 +12,8 @@ const router = Router();
  *   get:
  *     summary: Listar agendamentos com filtros opcionais
  *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: date
@@ -95,6 +97,8 @@ const router = Router();
  *   patch:
  *     summary: Confirmar um agendamento
  *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -118,6 +122,8 @@ const router = Router();
  *   patch:
  *     summary: Cancelar um agendamento
  *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -151,6 +157,8 @@ const router = Router();
  *   get:
  *     summary: Obter agenda do dia agrupada por profissional
  *     tags: [Schedule]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: date
