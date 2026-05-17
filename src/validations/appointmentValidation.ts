@@ -2,17 +2,27 @@ import { z } from "zod";
 
 export const createAppointmentSchema = z.object({
   clientName: z
-    .string()
-    .trim()
-    .min(2, "Client name must have at least 2 characters.")
-    .max(100, "Client name must have at most 100 characters."),
+  .string()
+  .trim()
+  .min(2, "Client name must have at least 2 characters.")
+  .max(100, "Client name must have at most 100 characters.")
+  .regex(
+    /^[A-Za-zÀ-ÿ\s'-]+$/,
+    "Client name contains invalid characters."
+  ),
 
   clientPhone: z
     .string()
     .trim()
     .min(8, "Client phone must have at least 8 characters.")
     .max(20, "Client phone must have at most 20 characters.")
-    .regex(/^[0-9+\-\s()]+$/, "Client phone contains invalid characters."),
+    .regex(/^[0-9+\-\s()]+$/, "Client phone contains invalid characters.")
+    .refine(
+         (value) => value.replace(/\D/g, "").length >= 10,
+         {
+            message: "Client phone must contain at least 10 digits."
+         }
+    ),
 
   clientEmail: z
     .string()
@@ -34,9 +44,15 @@ export const createAppointmentSchema = z.object({
 
   date: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format."),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.")
+    .refine(
+        (value) => !Number.isNaN(Date.parse(value)),
+        {
+        message: "Date must be valid."
+        }
+    ),
 
   time: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format.")
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format.")
 });
