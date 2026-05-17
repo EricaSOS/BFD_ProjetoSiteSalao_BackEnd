@@ -56,3 +56,22 @@ export const createAppointmentSchema = z.object({
     .string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format.")
 });
+
+export const appointmentIdParamsSchema = z.object({
+  id: z
+    .string()
+    .regex(/^\d+$/, "Appointment id must be a number.")
+    .transform(Number)
+    .refine((value) => value > 0, {
+      message: "Appointment id must be positive."
+    })
+});
+
+export const cancelAppointmentSchema = z.object({
+  cancellationReason: z
+    .string()
+    .trim()
+    .max(255, "Cancellation reason must have at most 255 characters.")
+    .optional()
+    .or(z.literal(""))
+});

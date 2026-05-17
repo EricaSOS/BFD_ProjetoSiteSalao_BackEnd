@@ -1,13 +1,7 @@
 import { validateRequest } from "../middlewares/validateRequest.js";
-import { createAppointmentSchema } from "../validations/appointmentValidation.js";
+import { createAppointmentSchema, appointmentIdParamsSchema, cancelAppointmentSchema } from "../validations/appointmentValidation.js";
 import { Router } from "express";
-import {
-  listAppointments,
-  createAppointment,
-  cancelAppointment,
-  confirmAppointment,
-  getDailySchedule
-} from "../controllers/appointmentsController.js";
+import {listAppointments, createAppointment, cancelAppointment, confirmAppointment, getDailySchedule} from "../controllers/appointmentsController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -174,8 +168,8 @@ const router = Router();
 
 router.get("/appointments", authMiddleware, listAppointments);
 router.post("/appointments", validateRequest(createAppointmentSchema), createAppointment);
-router.patch("/appointments/:id/confirm", authMiddleware, confirmAppointment);
-router.patch("/appointments/:id/cancel", authMiddleware, cancelAppointment);
+router.patch("/appointments/:id/confirm", authMiddleware, validateRequest(appointmentIdParamsSchema, "params"), confirmAppointment);
+router.patch("/appointments/:id/cancel", authMiddleware, validateRequest(appointmentIdParamsSchema,"params"), validateRequest(cancelAppointmentSchema), cancelAppointment);
 router.get("/schedule/day", authMiddleware, getDailySchedule);
 
 export default router;
