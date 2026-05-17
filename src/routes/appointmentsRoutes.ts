@@ -39,7 +39,9 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Lista de agendamentos retornada com sucesso
- */
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ * /
 
 /**
  * @swagger
@@ -110,10 +112,12 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Agendamento confirmado com sucesso
+ *      400:
+ *         description: ID inválido, agendamento já confirmado ou cancelado
+ *       401:
+ *         description: Token ausente, inválido ou expirado
  *       404:
  *         description: Agendamento não encontrado
- *       400:
- *         description: Agendamento já confirmado ou cancelado
  */
 
 /**
@@ -145,11 +149,13 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Agendamento cancelado com sucesso
- *       404:
- *         description: Agendamento não encontrado
  *       400:
- *         description: Agendamento já cancelado
- */
+ *         description: ID inválido, dados inválidos ou agendamento já cancelado
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Agendamento não encontrado 
+*/
 
 /**
  * @swagger
@@ -172,6 +178,8 @@ const router = Router();
  *         description: Agenda do dia retornada com sucesso
  *       400:
  *         description: Data não informada
+ *       401:
+ *         description: Token ausente, inválido ou expirado
  */
 
 router.get("/appointments", authMiddleware, listAppointments);
