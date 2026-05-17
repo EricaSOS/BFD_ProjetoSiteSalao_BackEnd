@@ -1,3 +1,5 @@
+import { validateRequest } from "../middlewares/validateRequest.js";
+import { createAppointmentSchema } from "../validations/appointmentValidation.js";
 import { Router } from "express";
 import {
   listAppointments,
@@ -170,7 +172,7 @@ const router = Router();
  */
 
 router.get("/appointments", listAppointments);
-router.post("/appointments", createAppointment);
+router.post("/appointments", validateRequest(createAppointmentSchema), createAppointment);
 router.patch("/appointments/:id/confirm", confirmAppointment);
 router.patch("/appointments/:id/cancel", cancelAppointment);
 router.get("/schedule/day", getDailySchedule);
