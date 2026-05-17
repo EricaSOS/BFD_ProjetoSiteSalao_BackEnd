@@ -8,6 +8,7 @@ import {
   confirmAppointment,
   getDailySchedule
 } from "../controllers/appointmentsController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
@@ -171,10 +172,10 @@ const router = Router();
  *         description: Data não informada
  */
 
-router.get("/appointments", listAppointments);
+router.get("/appointments", authMiddleware, listAppointments);
 router.post("/appointments", validateRequest(createAppointmentSchema), createAppointment);
-router.patch("/appointments/:id/confirm", confirmAppointment);
-router.patch("/appointments/:id/cancel", cancelAppointment);
-router.get("/schedule/day", getDailySchedule);
+router.patch("/appointments/:id/confirm", authMiddleware, confirmAppointment);
+router.patch("/appointments/:id/cancel", authMiddleware, cancelAppointment);
+router.get("/schedule/day", authMiddleware, getDailySchedule);
 
 export default router;
