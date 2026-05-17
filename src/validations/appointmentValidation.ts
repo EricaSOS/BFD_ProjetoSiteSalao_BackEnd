@@ -75,3 +75,29 @@ export const cancelAppointmentSchema = z.object({
     .optional()
     .or(z.literal(""))
 });
+
+export const listAppointmentsQuerySchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.")
+    .optional(),
+
+  professionalId: z
+    .string()
+    .regex(/^\d+$/, "Professional id must be a number.")
+    .transform(Number)
+    .refine((value) => value > 0, {
+      message: "Professional id must be positive."
+    })
+    .optional(),
+
+  status: z
+    .enum(["pending", "confirmed", "cancelled", "completed"])
+    .optional()
+});
+
+export const dailyScheduleQuerySchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.")
+});
