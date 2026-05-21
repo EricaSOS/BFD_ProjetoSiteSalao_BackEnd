@@ -119,11 +119,11 @@ export async function getAvailableTimesByProfessional(
     );
 
     const appointments = await db.all(
-      `SELECT time
-       FROM appointments
-       WHERE professional_id = ?
-         AND date = ?
-         AND status IN ('pending', 'confirmed')`,
+      `SELECT TO_CHAR(time, 'HH24:MI') AS time
+      FROM appointments
+      WHERE professional_id = ?
+        AND date = ?
+        AND status IN ('pending', 'confirmed')`,
       [id, date]
     );
 
