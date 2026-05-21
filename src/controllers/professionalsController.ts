@@ -36,7 +36,6 @@ export async function listProfessionalsByService(
       name: professional.name,
       photo: professional.photo_url,
       specialty: professional.specialty,
-      rating: professional.rating,
       whatsappPhone: professional.whatsapp_phone
     }));
 

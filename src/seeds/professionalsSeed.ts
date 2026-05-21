@@ -13,40 +13,37 @@ export async function seedProfessionals() {
   }
 
   await db.run(
-    `INSERT INTO professionals (name, photo_url, whatsapp_phone, specialty, rating, is_active)
+    `INSERT INTO professionals (name, photo_url, whatsapp_phone, specialty, is_active)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [
       "Ricardo Costa",
       "/images/professionals/ricardo.jpg",
       "5591999991111",
       "Cortes e barba",
-      4.9,
       true
     ]
   );
 
   await db.run(
-    `INSERT INTO professionals (name, photo_url, whatsapp_phone, specialty, rating, is_active)
+    `INSERT INTO professionals (name, photo_url, whatsapp_phone, specialty, is_active)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [
       "Ana Beatriz",
       "/images/professionals/ana_manicure.jpg",
       "5591999992222",
       "Coloração e hidratação",
-      4.8,
       true
     ]
   );
 
   await db.run(
-    `INSERT INTO professionals (name, photo_url, whatsapp_phone, specialty, rating, is_active)
+    `INSERT INTO professionals (name, photo_url, whatsapp_phone, specialty, is_active)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [
       "Juliana Souza",
       "/images/professionals/juliana.jpg",
       "5591999993333",
       "Manicure e pedicure",
-      4.7,
       true
     ]
   );
