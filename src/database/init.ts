@@ -18,9 +18,9 @@ export async function initDb() {
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       photo_url TEXT,
-      whatsapp_phone TEXT NOT NULL,
-      specialty TEXT,
-      rating NUMERIC(2,1) DEFAULT 0,
+      whatsapp_phone TEXT,
+      specialty TEXT NOT NULL,
+      rating NUMERIC(2,1) DEFAULT 5,
       is_active BOOLEAN NOT NULL DEFAULT TRUE
     );
 
