@@ -54,7 +54,14 @@ export const createAppointmentSchema = z.object({
 
   time: z
     .string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format.")
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format."),
+
+  notes: z
+  .string()
+  .trim()
+  .max(500, "Notes must have at most 500 characters.")
+  .optional()
+  .or(z.literal(""))
 });
 
 export const appointmentIdParamsSchema = z.object({

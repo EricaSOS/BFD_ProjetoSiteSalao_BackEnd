@@ -47,7 +47,8 @@ export async function createAppointment(req: Request, res: Response) {
       serviceId,
       professionalId,
       date,
-      time
+      time,
+      notes
     } = req.body;
 
     if (
@@ -132,7 +133,9 @@ export async function createAppointment(req: Request, res: Response) {
 *Meus Dados:*
 Nome: ${clientName}
 Telefone: ${clientPhone}
-E-mail: ${clientEmail ?? "Não informado"}`;
+E-mail: ${clientEmail ?? "Não informado"}
+
+${notes ? `\nObservações: ${notes}` : ""}`;
 
     const whatsappLink = `https://wa.me/${receptionWhatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
@@ -152,8 +155,9 @@ E-mail: ${clientEmail ?? "Não informado"}`;
         price,
         status,
         whatsapp_message,
+        notes,
         created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         clientName,
         clientPhone,
@@ -167,6 +171,7 @@ E-mail: ${clientEmail ?? "Não informado"}`;
         service.price,
         "pending",
         whatsappMessage,
+        notes?.trim() || null,
         createdAt
       ]
     );
