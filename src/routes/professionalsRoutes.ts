@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { getAvailableTimesByProfessional } from "../controllers/professionalsController.js";
+import {listProfessionals, createProfessional, deleteProfessional, listProfessionalsByService, getAvailableTimesByProfessional} from "../controllers/professionalsController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
@@ -56,5 +57,8 @@ const router = Router();
  */
 
 router.get("/:id/available-times", getAvailableTimesByProfessional);
-
+// Rotas administrativas protegidas
+router.get("/", authMiddleware, listProfessionals);
+router.post("/", authMiddleware, createProfessional);
+router.delete("/professionals/:id", authMiddleware, deleteProfessional);
 export default router;

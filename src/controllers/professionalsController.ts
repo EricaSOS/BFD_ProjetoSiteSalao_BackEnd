@@ -165,3 +165,99 @@ export async function getAvailableTimesByProfessional(
     });
   }
 }
+
+export async function listProfessionals(req: Request, res: Response) {
+  try {
+    const db = await getDb();
+
+    const professionals = await db.all(
+      `SELECT *
+       FROM professionals
+       WHERE is_active = TRUE
+       ORDER BY name`
+    );
+
+    return res.status(200).json(professionals);
+  } catch (error) {
+    console.error("Error listing professionals:", error);
+    return res.status(500).json({
+      error: "Error listing professionals."
+    });
+  }
+}
+
+export async function createProfessional(req: Request, res: Response) {
+  try {
+    const { name, specialty, photoUrl, whatsappPhone, rating } = req.body;
+
+    if (!name || !specialty) {
+      return res.status(400).json({
+        error: "Name and specialty are required."
+      });
+    }
+
+    const db = await getDb();
+
+    const result = await db.run(
+      `INSERT INTO professionals (
+        name,
+        photo_url,
+        whatsapp_phone,
+        specialty,
+        rating,
+        is_active
+      ) VALUES (?, ?, ?, ?, ?, TRUE)`,
+      [
+        name.trim(),
+        photoUrl?.trim() || null,
+        whatsappPhone?.trim() || null,
+        specialty.trim(),
+        rating ?? 5
+      ]
+    );
+
+    return res.status(201).json({
+      message: "Professional created successfully.",
+      id: result.lastID
+    });
+  } catch (error) {
+    console.error("Error creating professional:", error);
+    return res.status(500).json({
+      error: "Error creating professional."
+    });
+  }
+}
+
+export async function deleteProfessional(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+
+    const professional = await db.get(
+      "SELECT * FROM professionals WHERE id = ?",
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    await db.run(
+      `UPDATE professionals
+       SET is_active = FALSE
+       WHERE id = ?`,
+      [id]
+    );
+
+    return res.status(200).json({
+      message: "Professional deactivated successfully."
+    });
+  } catch (error) {
+    console.error("Error deleting professional:", error);
+    return res.status(500).json({
+      error: "Error deleting professional."
+    });
+  }
+}
