@@ -84,6 +84,22 @@ export async function initDb() {
       end_time TIME NOT NULL,
       reason TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS expenses (
+      id SERIAL PRIMARY KEY,
+      description TEXT NOT NULL,
+      amount NUMERIC(10,2) NOT NULL,
+      date DATE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS expenses (
+      id SERIAL PRIMARY KEY,
+      description TEXT NOT NULL,
+      amount NUMERIC(10,2) NOT NULL,
+      date DATE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   console.log("Database initialized successfully.");
