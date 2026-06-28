@@ -17,7 +17,10 @@ export function validateRequest(schema: ZodSchema, part: RequestPart = "body") {
       });
     }
 
-    req[part] = result.data;
+    if (part === "body") {
+      req.body = result.data;
+    }
+
     return next();
   };
 }
