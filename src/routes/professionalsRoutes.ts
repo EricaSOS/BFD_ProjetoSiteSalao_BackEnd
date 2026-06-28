@@ -54,6 +54,40 @@ const router = Router();
  *         description: Data não informada
  *       404:
  *         description: Profissional não encontrado
+ * /professionals:
+ *   get:
+ *     summary: Lista todos os profissionais ativos
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de profissionais retornada com sucesso.
+ *
+ *   post:
+ *     summary: Cadastra um novo profissional
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Profissional cadastrado com sucesso.
+ *
+ * /professionals/{id}:
+ *   delete:
+ *     summary: Desativa um profissional
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Profissional desativado com sucesso. 
  */
 
 router.get("/:id/available-times", getAvailableTimesByProfessional);
