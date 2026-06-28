@@ -15,6 +15,8 @@ import servicesRoutes from "./routes/servicesRoutes.js";
 import professionalsRoutes from "./routes/professionalsRoutes.js";
 import appointmentsRoutes from "./routes/appointmentsRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import expensesRoutes from "./routes/expensesRoutes.js";
+import paymentsRoutes from "./routes/paymentsRoutes.js";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
@@ -67,6 +69,8 @@ app.use("/services", servicesRoutes);
 app.use("/professionals", professionalsRoutes);
 app.use(appointmentsRoutes);
 app.use(authRoutes);
+app.use("/expenses", expensesRoutes);
+app.use("/payments", paymentsRoutes);
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err.message === "Not allowed by CORS") {
