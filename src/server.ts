@@ -60,10 +60,8 @@ app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
 
-app.get("/healthz", async (req, res) => {
-  res.status(200).json({
-    status: "ok"
-  });
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({status: "ok"});
 });
 
 app.use("/services", servicesRoutes);
