@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import "./infrastructure/keepAlive.js";
 import { initDb } from "./database/init.js";
 
 import { seedProfessionalSchedules } from "./seeds/professionalSchedulesSeed.js";
