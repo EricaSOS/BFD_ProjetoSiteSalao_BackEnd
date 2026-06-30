@@ -52,10 +52,6 @@ app.use(
 
 app.use(express.json({ limit: "10kb" }));
 
-app.use(apiLimiter);
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.get("/", (req, res) => {
   res.send("API is running 🚀");
 });
@@ -63,6 +59,12 @@ app.get("/", (req, res) => {
 app.get("/healthz", (_req, res) => {
   res.status(200).json({status: "ok"});
 });
+
+app.use(apiLimiter);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
 
 app.use("/services", servicesRoutes);
 app.use("/professionals", professionalsRoutes);
