@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import "./infrastructure/keepAlive.js";
 import { initDb } from "./database/init.js";
 
 import { seedProfessionalSchedules } from "./seeds/professionalSchedulesSeed.js";
@@ -23,6 +22,8 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 
 const app = express();
+
+app.set("trust proxy", 1);
 
 const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL].filter(Boolean);
 
