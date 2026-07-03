@@ -1,156 +1,333 @@
-# BFD_ProjetoSiteSalao_BackEnd
-Projeto desenvolvido para Residência do Bolsa Futuro Digital. Cliente Salão Wilson Hair.
+# 💇 Companhia da Beleza — Backend
 
-# 💇‍♀️ Beauty Salon Booking API
+<p align="center">
 
-API REST para sistema de agendamento de salão de beleza, desenvolvida com **Node.js**, **TypeScript**, **Express** e **SQLite**.
+API REST desenvolvida para o sistema **Companhia da Beleza**, contemplando agendamento online, autenticação administrativa, controle de profissionais, despesas, pagamentos e integração com frontend.
 
-Este projeto foi construído como parte do programa **Bolsa Futuro Digital**, com foco em boas práticas de backend, organização de código e integração com frontend.
+**Node.js • TypeScript • Express • Supabase PostgreSQL • Swagger • JWT**
 
----
-
-# 🚀 Tecnologias Utilizadas
-
-- Node.js
-- TypeScript
-- Express
-- SQLite
-- Swagger (documentação da API)
+</p>
 
 ---
 
-# 📁 Estrutura do Projeto
+## 📋 Sobre o projeto
 
-```bash
-src/
-  controllers/      # Regras de negócio
-  routes/           # Definição das rotas
-  database/         # Conexão e inicialização do banco
-  seeds/            # Dados iniciais
-  utils/            # Funções auxiliares (datas, horários)
-  docs/             # Configuração do Swagger
-  server.ts         # Arquivo principal da aplicação
-  ```
+Este repositório contém o backend do sistema **Companhia da Beleza**, desenvolvido durante o **Programa Bolsa Futuro Digital (BFD 2025)**.
+
+A API foi estruturada para atender tanto o fluxo público de agendamento quanto a área administrativa do sistema, permitindo comunicação com o frontend por meio de rotas REST.
+
 ---
 
-# 📌 Funcionalidades
+## ✨ Funcionalidades principais
 
-## 🧾 Services (Serviços)
+### Área pública
 
-- Listar serviços
-- Buscar serviço por ID
-- Criar serviço
-- Atualizar serviço
-- Inativar serviço (soft delete)
+- Listagem de serviços;
+- Listagem de profissionais;
+- Consulta de horários disponíveis;
+- Criação de agendamentos;
+- Geração automática de mensagem para WhatsApp.
 
-# 👩‍🔧 Professionals (Profissionais)
+### Área administrativa
 
-- Listar profissionais por serviço
-- Consultar horários disponíveis por profissional e data
+- Login administrativo via JWT;
+- Listagem e gerenciamento de agendamentos;
+- Gerenciamento de profissionais;
+- Controle de despesas;
+- Controle de pagamentos;
+- Dashboard integrado ao frontend.
 
-# 📅 Appointments (Agendamentos)
-
-- Criar agendamento
-- Listar agendamentos (com filtros)
-- Confirmar agendamento
-- Cancelar agendamento
-
-# 📊 Schedule (Agenda do Dia)
-
-- Consultar agenda agrupada por profissional
-
-# ⚙️ Regras de Negócio
-- Apenas agendamentos com status pending e confirmed bloqueiam horários
-- Agendamentos cancelados liberam automaticamente o horário
-- A disponibilidade considera:
-    - agenda semanal do profissional
-    - múltiplos intervalos por dia
-    - indisponibilidade parcial do profissional
-    - fechamento parcial ou total do salão
-    - agendamentos já existentes
 ---
 
-# ▶️ Como Executar o Projeto
-1. Instalar dependências
-npm install
-2. Rodar o projeto
-npm run dev
-3. Acessar o servidor
-http://localhost:3000
+## 🚀 Tecnologias utilizadas
+
+| Tecnologia | Finalidade |
+|------------|------------|
+| Node.js | Runtime JavaScript |
+| TypeScript | Tipagem estática |
+| Express | Framework backend |
+| Supabase PostgreSQL | Banco de dados |
+| JWT | Autenticação administrativa |
+| Swagger | Documentação da API |
+| Helmet | Segurança HTTP |
+| CORS | Controle de origem |
+| Express Rate Limit | Proteção contra excesso de requisições |
+| Render | Deploy do backend |
+
 ---
 
-# 📚 Documentação da API (Swagger)
+## 📁 Estrutura do projeto
 
-Após iniciar o servidor, acesse:
+```txt
+src
+│
+├── auth
+├── controllers
+├── database
+├── docs
+├── infrastructure
+├── middlewares
+├── routes
+├── schemas
+├── seeds
+├── utils
+└── server.ts
+```
 
+---
+
+## 🔐 Autenticação
+
+A área administrativa utiliza autenticação baseada em **JWT**.
+
+Após o login, o token deve ser enviado no cabeçalho das requisições protegidas:
+
+```http
+Authorization: Bearer <token>
+```
+
+---
+
+## 📚 Documentação da API
+
+A documentação interativa está disponível via Swagger.
+
+Ambiente local:
+
+```txt
 http://localhost:3000/api-docs
+```
 
-A interface Swagger permite:
+Ambiente publicado:
 
-- visualizar todas as rotas
-- testar endpoints
-- entender os dados de entrada e saída
+```txt
+https://bfd-projeto-salao-backend.onrender.com/api-docs
+```
+
+> Algumas rotas administrativas exigem autenticação via JWT.
+
 ---
 
-# 🔗 Rotas Principais
-## Services
-Método	Rota
-GET	/services
-GET	/services/{id}
-GET	/services/{id}/professionals
-POST	/services
-PATCH	/services/{id}
-DELETE	/services/{id}
+## 📦 Rotas principais
 
-## Professionals
-Método	Rota
-GET	/professionals/{id}/available-times?date=YYYY-MM-DD
+### Auth
 
-## Appointments
-Método	Rota
-GET	/appointments
-POST	/appointments
-PATCH	/appointments/{id}/confirm
-PATCH	/appointments/{id}/cancel
+| Método | Endpoint |
+|--------|----------|
+| POST | `/auth/login` |
 
-## Schedule
-Método	Rota
-GET	/schedule/day?date=YYYY-MM-DD
 ---
 
-# 📦 Banco de Dados
+### Services
+
+| Método | Endpoint |
+|--------|----------|
+| GET | `/services` |
+| GET | `/services/{id}` |
+| POST | `/services` |
+| PATCH | `/services/{id}` |
+| DELETE | `/services/{id}` |
+
+---
+
+### Professionals
+
+| Método | Endpoint |
+|--------|----------|
+| GET | `/professionals` |
+| GET | `/professionals?serviceId={id}` |
+| GET | `/professionals/{id}/available-times?date=YYYY-MM-DD` |
+| POST | `/professionals` |
+| DELETE | `/professionals/{id}` |
+
+---
+
+### Appointments
+
+| Método | Endpoint |
+|--------|----------|
+| GET | `/appointments` |
+| POST | `/appointments` |
+| PATCH | `/appointments/{id}/confirm` |
+| PATCH | `/appointments/{id}/cancel` |
+| GET | `/schedule/day?date=YYYY-MM-DD` |
+
+---
+
+### Expenses
+
+| Método | Endpoint |
+|--------|----------|
+| GET | `/expenses` |
+| POST | `/expenses` |
+| DELETE | `/expenses/{id}` |
+
+---
+
+### Payments
+
+| Método | Endpoint |
+|--------|----------|
+| GET | `/payments` |
+| POST | `/payments` |
+| DELETE | `/payments/{id}` |
+
+---
+
+## 🗄 Banco de dados
+
+O projeto utiliza **PostgreSQL via Supabase**.
 
 Principais tabelas:
 
-- services
-- professionals
-- professional_services
-- appointments
-- professional_schedules
-- professional_unavailable_dates
-- business_closures
+- `services`
+- `professionals`
+- `professional_services`
+- `appointments`
+- `professional_schedules`
+- `professional_unavailable_dates`
+- `business_closures`
+- `expenses`
+- `payments`
+
 ---
 
-## 🧩 Integração com Frontend
+## ⚙️ Regras de negócio
 
-O backend foi estruturado para integração com frontend em:
-React
-Vite
-MUI
-Tailwind
+- Apenas agendamentos com status `pending` e `confirmed` bloqueiam horários;
+- Agendamentos cancelados liberam automaticamente o horário;
+- A disponibilidade considera:
+  - agenda semanal do profissional;
+  - múltiplos intervalos por dia;
+  - indisponibilidade parcial do profissional;
+  - fechamento parcial ou total do salão;
+  - agendamentos já existentes;
+  - duração do serviço;
+- O backend gera a mensagem de confirmação para envio via WhatsApp.
 
-Fluxo esperado:
-Seleção de serviço
-Seleção de profissional
-Escolha de data e horário
-Preenchimento de dados do cliente
-Confirmação e envio via WhatsApp
 ---
 
-# 👩‍💻 Autoria
+## ▶️ Como executar localmente
 
-## Projeto desenvolvido por:
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+NODE_ENV=development
+PORT=3000
+
+DATABASE_URL=postgresql://usuario:senha@host:porta/database
+
+FRONTEND_URL=http://localhost:5173
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+JWT_SECRET=troque-esta-chave-em-producao
+
+RECEPTION_WHATSAPP_PHONE=5591999999999
+
+KEEP_ALIVE_ENABLED=false
+KEEP_ALIVE_URL=https://bfd-projeto-salao-backend.onrender.com
+KEEP_ALIVE_INTERVAL=4
+KEEP_ALIVE_START=6
+KEEP_ALIVE_END=23
+KEEP_ALIVE_WEEKDAYS=1-6
+KEEP_ALIVE_TIMEZONE=America/Belem
+```
+
+Execute em modo desenvolvimento:
+
+```bash
+npm run dev
+```
+
+Servidor local:
+
+```txt
+http://localhost:3000
+```
+
+---
+
+## ☁️ Deploy
+
+O backend está publicado no Render.
+
+URL base:
+
+```txt
+https://bfd-projeto-salao-backend.onrender.com
+```
+
+Health check:
+
+```txt
+https://bfd-projeto-salao-backend.onrender.com/healthz
+```
+
+Documentação Swagger:
+
+```txt
+https://bfd-projeto-salao-backend.onrender.com/api-docs
+```
+
+---
+
+## 🩺 Health check
+
+A API possui uma rota leve para verificação de disponibilidade:
+
+```txt
+GET /healthz
+```
+
+Resposta esperada:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+---
+
+## 🧩 Integração com frontend
+
+Este backend foi desenvolvido para integração com o frontend React/Vite do sistema Companhia da Beleza.
+
+Fluxo público esperado:
+
+```txt
+Serviço
+↓
+Profissional
+↓
+Data e horário
+↓
+Dados do cliente
+↓
+Resumo e WhatsApp
+```
+
+---
+
+## 👩‍💻 Desenvolvimento
+
+Backend desenvolvido por:
 
 **Érica Santos Oliveira da Silva**
-Estudante de Análise e Desenvolvimento de Sistemas (IFPA)
-Programa Bolsa Futuro Digital
+
+Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas  
+Instituto Federal do Pará — IFPA  
+Programa Bolsa Futuro Digital — BFD 2025
+
+---
+
+## 📄 Observações
+
+Este projeto foi desenvolvido para fins acadêmicos, demonstração técnica, entrega de projeto e composição de portfólio profissional.
