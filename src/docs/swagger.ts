@@ -3,15 +3,19 @@ import swaggerJSDoc from "swagger-jsdoc";
 const swaggerDefinition = {
   openapi: "3.0.0",
   info: {
-    title: "Projeto Salão API",
+    title: "Companhia da Beleza API",
     version: "1.0.0",
-    description: "API for beauty salon booking system"
+    description: "API REST para gerenciamento de agendamentos, profissionais, despesas e pagamentos do sistema Companhia da Beleza."
   },
   servers: [
-    {
-      url: "http://localhost:3000",
-      description: "Local server"
-    }
+     {
+        url: "http://localhost:3000",
+        description: "Ambiente local"
+      },
+      {
+        url: "https://bfd-projeto-salao-backend.onrender.com",
+        description: "Ambiente de produção"
+      }
   ],
   components: {
     securitySchemes: {
