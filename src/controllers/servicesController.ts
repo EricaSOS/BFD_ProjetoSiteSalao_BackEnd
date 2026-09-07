@@ -25,6 +25,33 @@ export async function listServices(req: Request, res: Response) {
   }
 }
 
+export async function listAllServices(req: Request, res: Response) {
+  try {
+    const db = await getDb();
+
+    const rows = await db.all(
+      "SELECT * FROM services ORDER BY id"
+    );
+
+    const services = rows.map((service: any) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      duration: service.duration_minutes,
+      imageUrl: service.image_url,
+      isActive: service.is_active
+    }));
+
+    return res.status(200).json(services);
+  } catch (error) {
+    console.error("Error fetching all services:", error);
+    return res.status(500).json({
+      error: "Error fetching services."
+    });
+  }
+}
+
 export async function getServiceById(req: Request, res: Response) {
   try {
     const { id } = req.params;
