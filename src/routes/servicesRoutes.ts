@@ -8,6 +8,7 @@ import {
 } from "../controllers/servicesController.js";
 
 import { listProfessionalsByService } from "../controllers/professionalsController.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 
 const router = Router();
@@ -137,6 +138,8 @@ const router = Router();
  *   post:
  *     summary: Criar um novo serviço
  *     tags: [Services]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -175,6 +178,8 @@ const router = Router();
  *   patch:
  *     summary: Atualizar um serviço
  *     tags: [Services]
+ *     security:
+ *       - bearerAuth: [] 
  *     parameters:
  *       - in: path
  *         name: id
@@ -217,6 +222,8 @@ const router = Router();
  *   delete:
  *     summary: Inativar um serviço
  *     tags: [Services]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -235,8 +242,8 @@ const router = Router();
 router.get("/", listServices);
 router.get("/:id/professionals", listProfessionalsByService);
 router.get("/:id", getServiceById);
-router.post("/", createService);
-router.patch("/:id", updateService);
-router.delete("/:id", deleteService);
+router.post("/", authMiddleware, createService);
+router.patch("/:id", authMiddleware, updateService);
+router.delete("/:id", authMiddleware, deleteService);
 
 export default router;
