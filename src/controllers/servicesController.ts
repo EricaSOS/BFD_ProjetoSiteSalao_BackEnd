@@ -191,3 +191,36 @@ export async function deleteService(req: Request, res: Response) {
     return res.status(500).json({ error: "Error deleting service." });
   }
 }
+
+export async function reactivateService(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+
+    const existingService = await db.get(
+      "SELECT * FROM services WHERE id = ? AND is_active = 0",
+      [id]
+    );
+
+    if (!existingService) {
+      return res.status(404).json({
+        error: "Inactive service not found."
+      });
+    }
+
+    await db.run(
+      "UPDATE services SET is_active = 1 WHERE id = ?",
+      [id]
+    );
+
+    return res.status(200).json({
+      message: "Service reactivated successfully."
+    });
+  } catch (error) {
+    console.error("Error reactivating service:", error);
+
+    return res.status(500).json({
+      error: "Error reactivating service."
+    });
+  }
+}

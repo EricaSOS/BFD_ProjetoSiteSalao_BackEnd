@@ -1,10 +1,12 @@
 import { Router } from "express";
 import {
   listServices,
+  listAllServices,
   getServiceById,
   createService,
   updateService,
-  deleteService
+  deleteService,
+  reactivateService
 } from "../controllers/servicesController.js";
 
 import { listProfessionalsByService } from "../controllers/professionalsController.js";
@@ -132,6 +134,50 @@ const router = Router();
  *       404:
  *         description: Serviço não encontrado
  */
+
+/**
+ * @swagger
+ * /services/admin:
+ *   get:
+ *     summary: Listar todos os serviços para administração
+ *     tags: [Services]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de serviços ativos e inativos retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   name:
+ *                     type: string
+ *                     example: Corte Feminino
+ *                   description:
+ *                     type: string
+ *                     example: Corte com finalização para valorizar seu estilo.
+ *                   price:
+ *                     type: number
+ *                     example: 80
+ *                   duration:
+ *                     type: integer
+ *                     example: 60
+ *                   imageUrl:
+ *                     type: string
+ *                     example: /images/services/corte-feminino.jpg
+ *                   isActive:
+ *                     type: boolean
+ *                     example: true
+ *       401:
+ *         description: Não autorizado
+ */
+
  /**
  * @swagger
  * /services:
@@ -239,10 +285,40 @@ const router = Router();
  *         description: Serviço não encontrado
  */
 
+/**
+ * @swagger
+ * /services/{id}/reactivate:
+ *   patch:
+ *     summary: Reativar um serviço
+ *     tags: [Services]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do serviço
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Serviço reativado com sucesso
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Serviço inativo não encontrado
+ */
+
 router.get("/", listServices);
+
+router.get("/admin", authMiddleware, listAllServices);
+
 router.get("/:id/professionals", listProfessionalsByService);
 router.get("/:id", getServiceById);
+
 router.post("/", authMiddleware, createService);
+router.patch("/:id/reactivate", authMiddleware, reactivateService);
 router.patch("/:id", authMiddleware, updateService);
 router.delete("/:id", authMiddleware, deleteService);
 
