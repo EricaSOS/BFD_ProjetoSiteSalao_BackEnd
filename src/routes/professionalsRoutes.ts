@@ -186,6 +186,70 @@ const router = Router();
  *         description: Profissional inativo não encontrado
  *       500:
  *         description: Erro ao reativar profissional
+ * /professionals/{id}/services:
+ *   get:
+ *     summary: Listar serviços do profissional
+ *     description: Retorna os serviços vinculados a um profissional. Rota administrativa protegida por JWT.
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do profissional
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Serviços vinculados ao profissional retornados com sucesso
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro ao listar serviços do profissional
+ *
+ *   put:
+ *     summary: Atualizar serviços do profissional
+ *     description: Substitui os vínculos atuais do profissional pelos serviços informados. Rota administrativa protegida por JWT.
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do profissional
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - serviceIds
+ *             properties:
+ *               serviceIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 3, 4]
+ *     responses:
+ *       200:
+ *         description: Serviços do profissional atualizados com sucesso
+ *       400:
+ *         description: Lista de serviços inválida ou serviço inexistente/inativo
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro ao atualizar serviços do profissional
  * 
  * /professionals/{id}/available-times:
  *   get:
