@@ -558,3 +558,58 @@ export async function updateProfessionalServices(
     });
   }
 }
+
+export async function listProfessionalSchedules(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+
+    const professional = await db.get(
+      `SELECT id
+       FROM professionals
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    const schedules = await db.all(
+      `SELECT
+         id,
+         day_of_week,
+         TO_CHAR(start_time, 'HH24:MI') AS start_time,
+         TO_CHAR(end_time, 'HH24:MI') AS end_time,
+         is_active
+       FROM professional_schedules
+       WHERE professional_id = ?
+       ORDER BY day_of_week, start_time`,
+      [id]
+    );
+
+    const result = schedules.map((schedule: any) => ({
+      id: schedule.id,
+      dayOfWeek: schedule.day_of_week,
+      startTime: schedule.start_time,
+      endTime: schedule.end_time,
+      isActive: schedule.is_active
+    }));
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(
+      "Error listing professional schedules:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error listing professional schedules."
+    });
+  }
+}

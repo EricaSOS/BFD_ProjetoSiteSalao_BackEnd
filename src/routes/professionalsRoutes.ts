@@ -2,7 +2,8 @@ import { Router } from "express";
 import {
     listProfessionals,
     listAllProfessionals,
-    listServicesByProfessional, 
+    listServicesByProfessional,
+    listProfessionalSchedules, 
     createProfessional,
     updateProfessional, 
     updateProfessionalServices,
@@ -290,6 +291,8 @@ router.post("/", authMiddleware, createProfessional);
 
 router.get("/:id/services", authMiddleware, listServicesByProfessional);
 router.put("/:id/services", authMiddleware, updateProfessionalServices);
+
+router.get("/:id/schedules", authMiddleware, listProfessionalSchedules);
 
 router.get("/:id/available-times", getAvailableTimesByProfessional);
 
