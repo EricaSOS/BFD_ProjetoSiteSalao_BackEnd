@@ -4,7 +4,8 @@ import {
     listAllProfessionals, 
     createProfessional,
     updateProfessional, 
-    deleteProfessional, 
+    deleteProfessional,
+    reactivateProfessional, 
     getAvailableTimesByProfessional
 } from "../controllers/professionalsController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
@@ -159,6 +160,31 @@ const router = Router();
  *       500:
  *         description: Erro ao inativar profissional
  *
+ * /professionals/{id}/reactivate:
+ *   patch:
+ *     summary: Reativar profissional
+ *     description: Reativa um profissional anteriormente inativado. Rota administrativa protegida por JWT.
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do profissional
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Profissional reativado com sucesso
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Profissional inativo não encontrado
+ *       500:
+ *         description: Erro ao reativar profissional
+ * 
  * /professionals/{id}/available-times:
  *   get:
  *     summary: Listar horários disponíveis
@@ -197,6 +223,7 @@ router.get("/", authMiddleware, listProfessionals);
 router.post("/", authMiddleware, createProfessional);
 
 router.get("/:id/available-times", getAvailableTimesByProfessional);
+router.patch("/:id/reactivate", authMiddleware, reactivateProfessional);
 router.patch("/:id", authMiddleware, updateProfessional);
 router.delete("/:id", authMiddleware, deleteProfessional);
 

@@ -372,3 +372,38 @@ export async function deleteProfessional(req: Request, res: Response) {
     });
   }
 }
+
+export async function reactivateProfessional(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+
+    const professional = await db.get(
+      "SELECT * FROM professionals WHERE id = ? AND is_active = FALSE",
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Inactive professional not found."
+      });
+    }
+
+    await db.run(
+      `UPDATE professionals
+       SET is_active = TRUE
+       WHERE id = ?`,
+      [id]
+    );
+
+    return res.status(200).json({
+      message: "Professional reactivated successfully."
+    });
+  } catch (error) {
+    console.error("Error reactivating professional:", error);
+
+    return res.status(500).json({
+      error: "Error reactivating professional."
+    });
+  }
+}
