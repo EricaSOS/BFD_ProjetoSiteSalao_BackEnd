@@ -216,6 +216,59 @@ export async function listAllProfessionals(req: Request, res: Response) {
   }
 }
 
+export async function listServicesByProfessional(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+
+    const professional = await db.get(
+      "SELECT * FROM professionals WHERE id = ?",
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    const services = await db.all(
+      `SELECT
+         s.id,
+         s.name,
+         s.description,
+         s.price,
+         s.duration_minutes,
+         s.image_url,
+         s.is_active
+       FROM services s
+       INNER JOIN professional_services ps
+         ON s.id = ps.service_id
+       WHERE ps.professional_id = ?
+       ORDER BY s.name`,
+      [id]
+    );
+
+    const result = services.map((service: any) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      duration: service.duration_minutes,
+      imageUrl: service.image_url,
+      isActive: service.is_active
+    }));
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Error listing services by professional:", error);
+
+    return res.status(500).json({
+      error: "Error listing professional services."
+    });
+  }
+}
+
 export async function createProfessional(req: Request, res: Response) {
   try {
     const { name, specialty, photoUrl, whatsappPhone, rating } = req.body;

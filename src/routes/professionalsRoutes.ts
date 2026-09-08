@@ -1,7 +1,8 @@
 import { Router } from "express";
 import {
     listProfessionals,
-    listAllProfessionals, 
+    listAllProfessionals,
+    listServicesByProfessional, 
     createProfessional,
     updateProfessional, 
     deleteProfessional,
@@ -222,7 +223,9 @@ router.get("/admin", authMiddleware, listAllProfessionals);
 router.get("/", authMiddleware, listProfessionals);
 router.post("/", authMiddleware, createProfessional);
 
+router.get("/:id/services", authMiddleware, listServicesByProfessional);
 router.get("/:id/available-times", getAvailableTimesByProfessional);
+
 router.patch("/:id/reactivate", authMiddleware, reactivateProfessional);
 router.patch("/:id", authMiddleware, updateProfessional);
 router.delete("/:id", authMiddleware, deleteProfessional);
