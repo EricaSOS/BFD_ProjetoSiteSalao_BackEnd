@@ -186,6 +186,36 @@ export async function listProfessionals(req: Request, res: Response) {
   }
 }
 
+export async function listAllProfessionals(req: Request, res: Response) {
+  try {
+    const db = await getDb();
+
+    const professionals = await db.all(
+      `SELECT *
+       FROM professionals
+       ORDER BY name`
+    );
+
+    const result = professionals.map((professional: any) => ({
+      id: professional.id,
+      name: professional.name,
+      specialty: professional.specialty,
+      photoUrl: professional.photo_url,
+      whatsappPhone: professional.whatsapp_phone,
+      rating: professional.rating,
+      isActive: professional.is_active
+    }));
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Error listing all professionals:", error);
+
+    return res.status(500).json({
+      error: "Error listing professionals."
+    });
+  }
+}
+
 export async function createProfessional(req: Request, res: Response) {
   try {
     const { name, specialty, photoUrl, whatsappPhone, rating } = req.body;
@@ -224,6 +254,87 @@ export async function createProfessional(req: Request, res: Response) {
     console.error("Error creating professional:", error);
     return res.status(500).json({
       error: "Error creating professional."
+    });
+  }
+}
+
+export async function updateProfessional(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      specialty,
+      photoUrl,
+      whatsappPhone,
+      rating
+    } = req.body;
+
+    const db = await getDb();
+
+    const existingProfessional = await db.get(
+      "SELECT * FROM professionals WHERE id = ? AND is_active = TRUE",
+      [id]
+    );
+
+    if (!existingProfessional) {
+      return res.status(404).json({
+        error: "Active professional not found."
+      });
+    }
+
+    const updatedName =
+      name !== undefined ? name.trim() : existingProfessional.name;
+
+    const updatedSpecialty =
+      specialty !== undefined
+        ? specialty.trim()
+        : existingProfessional.specialty;
+
+    const updatedPhotoUrl =
+      photoUrl !== undefined
+        ? photoUrl?.trim() || null
+        : existingProfessional.photo_url;
+
+    const updatedWhatsappPhone =
+      whatsappPhone !== undefined
+        ? whatsappPhone?.trim() || null
+        : existingProfessional.whatsapp_phone;
+
+    const updatedRating =
+      rating !== undefined ? rating : existingProfessional.rating;
+
+    if (!updatedName || !updatedSpecialty) {
+      return res.status(400).json({
+        error: "Name and specialty cannot be empty."
+      });
+    }
+
+    await db.run(
+      `UPDATE professionals
+       SET name = ?,
+           specialty = ?,
+           photo_url = ?,
+           whatsapp_phone = ?,
+           rating = ?
+       WHERE id = ?`,
+      [
+        updatedName,
+        updatedSpecialty,
+        updatedPhotoUrl,
+        updatedWhatsappPhone,
+        updatedRating,
+        id
+      ]
+    );
+
+    return res.status(200).json({
+      message: "Professional updated successfully."
+    });
+  } catch (error) {
+    console.error("Error updating professional:", error);
+
+    return res.status(500).json({
+      error: "Error updating professional."
     });
   }
 }
