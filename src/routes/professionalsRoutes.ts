@@ -5,6 +5,7 @@ import {
     listServicesByProfessional, 
     createProfessional,
     updateProfessional, 
+    updateProfessionalServices,
     deleteProfessional,
     reactivateProfessional, 
     getAvailableTimesByProfessional
@@ -224,6 +225,8 @@ router.get("/", authMiddleware, listProfessionals);
 router.post("/", authMiddleware, createProfessional);
 
 router.get("/:id/services", authMiddleware, listServicesByProfessional);
+router.put("/:id/services", authMiddleware, updateProfessionalServices);
+
 router.get("/:id/available-times", getAvailableTimesByProfessional);
 
 router.patch("/:id/reactivate", authMiddleware, reactivateProfessional);

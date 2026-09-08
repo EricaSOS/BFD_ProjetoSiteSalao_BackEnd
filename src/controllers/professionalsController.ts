@@ -460,3 +460,101 @@ export async function reactivateProfessional(req: Request, res: Response) {
     });
   }
 }
+
+export async function updateProfessionalServices(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+    const { serviceIds } = req.body;
+
+    if (!Array.isArray(serviceIds)) {
+      return res.status(400).json({
+        error: "serviceIds must be an array."
+      });
+    }
+
+    const normalizedServiceIds = [
+      ...new Set(
+        serviceIds.map(Number)
+      )
+    ];
+
+    const hasInvalidId = normalizedServiceIds.some(
+      (serviceId) =>
+        !Number.isInteger(serviceId) || serviceId <= 0
+    );
+
+    if (hasInvalidId) {
+      return res.status(400).json({
+        error: "All service IDs must be valid integers."
+      });
+    }
+
+    const db = await getDb();
+
+    const professional = await db.get(
+      `SELECT id
+       FROM professionals
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    if (normalizedServiceIds.length > 0) {
+      const services = await db.all(
+        `SELECT id
+         FROM services
+         WHERE id = ANY(?::int[])
+           AND is_active = TRUE`,
+        [normalizedServiceIds]
+      );
+
+      if (services.length !== normalizedServiceIds.length) {
+        return res.status(400).json({
+          error: "One or more services do not exist or are inactive."
+        });
+      }
+    }
+
+    await db.query(
+      `WITH removed AS (
+        DELETE FROM professional_services
+        WHERE professional_id = ?
+          AND NOT (service_id = ANY(?::int[]))
+      )
+      INSERT INTO professional_services (
+        professional_id,
+        service_id
+      )
+      SELECT ?, UNNEST(?::int[])
+      ON CONFLICT (professional_id, service_id)
+      DO NOTHING`,
+      [
+        id,
+        normalizedServiceIds,
+        id,
+        normalizedServiceIds
+      ]
+    );
+
+    return res.status(200).json({
+      message: "Professional services updated successfully."
+    });
+  } catch (error) {
+    console.error(
+      "Error updating professional services:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error updating professional services."
+    });
+  }
+}
