@@ -90,7 +90,7 @@ const router = Router();
  *       201:
  *         description: Agendamento criado com sucesso
  *       400:
- *         description: Dados inválidos ou horário indisponível
+ *         description: Dados inválidos, horário fora da jornada, profissional indisponível, salão fechado ou horário já ocupado
  *       404:
  *         description: Serviço ou profissional não encontrado
  */

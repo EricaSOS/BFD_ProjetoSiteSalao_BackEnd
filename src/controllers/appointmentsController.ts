@@ -96,13 +96,66 @@ export async function createAppointment(req: Request, res: Response) {
         error: "This professional does not provide the selected service."
       });
     }
+const [year, month, day] = date.split("-").map(Number);
+const appointmentDate = new Date(year, month - 1, day);
+
+const dayOfWeek = appointmentDate.getDay() + 1;
+    
+    const schedule = await db.get(
+  `SELECT id
+   FROM professional_schedules
+   WHERE professional_id = ?
+     AND day_of_week = ?
+     AND is_active = TRUE
+     AND ?::TIME >= start_time
+     AND ?::TIME < end_time`,
+  [professionalId, dayOfWeek, time, time]
+);
+
+if (!schedule) {
+  return res.status(400).json({
+    error: "The selected time is outside the professional's working hours."
+  });
+}
+
+const professionalUnavailable = await db.get(
+  `SELECT id
+   FROM professional_unavailable_dates
+   WHERE professional_id = ?
+     AND date = ?
+     AND ?::TIME >= start_time
+     AND ?::TIME < end_time`,
+  [professionalId, date, time, time]
+);
+
+if (professionalUnavailable) {
+  return res.status(400).json({
+    error: "The professional is unavailable at the selected time."
+  });
+}
+
+const businessClosure = await db.get(
+  `SELECT id
+   FROM business_closures
+   WHERE date = ?
+     AND ?::TIME >= start_time
+     AND ?::TIME < end_time`,
+  [date, time, time]
+);
+
+if (businessClosure) {
+  return res.status(400).json({
+    error: "The salon is closed at the selected time."
+  });
+}
 
     const conflictingAppointment = await db.get(
-      `SELECT * FROM appointments
-       WHERE professional_id = ?
-         AND date = ?
-         AND time = ?
-         AND status IN ('pending', 'confirmed')`,
+      `SELECT id
+      FROM appointments
+      WHERE professional_id = ?
+        AND date = ?
+        AND time = ?
+        AND status IN ('pending', 'confirmed')`,
       [professionalId, date, time]
     );
 
