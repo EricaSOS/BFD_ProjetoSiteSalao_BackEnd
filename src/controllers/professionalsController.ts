@@ -613,3 +613,115 @@ export async function listProfessionalSchedules(
     });
   }
 }
+
+export async function updateProfessionalSchedulesByDay(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id, dayOfWeek } = req.params;
+    const { schedules } = req.body;
+
+    const parsedDayOfWeek = Number(dayOfWeek);
+
+    if (
+      !Number.isInteger(parsedDayOfWeek) ||
+      parsedDayOfWeek < 1 ||
+      parsedDayOfWeek > 7
+    ) {
+      return res.status(400).json({
+        error: "Day of week must be an integer between 1 and 7."
+      });
+    }
+
+    if (!Array.isArray(schedules)) {
+      return res.status(400).json({
+        error: "Schedules must be an array."
+      });
+    }
+
+    for (const schedule of schedules) {
+      const { startTime, endTime } = schedule;
+
+      if (
+        typeof startTime !== "string" ||
+        typeof endTime !== "string"
+      ) {
+        return res.status(400).json({
+          error: "Start time and end time are required."
+        });
+      }
+
+      if (startTime >= endTime) {
+        return res.status(400).json({
+          error: "Start time must be earlier than end time."
+        });
+      }
+    }
+
+    const db = await getDb();
+
+    const professional = await db.get(
+      `SELECT id
+       FROM professionals
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    await db.query(
+      `WITH removed AS (
+         DELETE FROM professional_schedules
+         WHERE professional_id = ?
+           AND day_of_week = ?
+       )
+       INSERT INTO professional_schedules (
+         professional_id,
+         day_of_week,
+         start_time,
+         end_time,
+         is_active
+       )
+       SELECT
+         ?,
+         ?,
+         schedule.start_time::TIME,
+         schedule.end_time::TIME,
+         TRUE
+       FROM jsonb_to_recordset(?::jsonb) AS schedule(
+         start_time TEXT,
+         end_time TEXT
+       )`,
+      [
+        id,
+        parsedDayOfWeek,
+        id,
+        parsedDayOfWeek,
+        JSON.stringify(
+          schedules.map((schedule) => ({
+            start_time: schedule.startTime,
+            end_time: schedule.endTime
+          }))
+        )
+      ]
+    );
+
+    return res.status(200).json({
+      message: "Professional schedule updated successfully."
+    });
+  } catch (error) {
+    console.error(
+      "Error updating professional schedule:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error updating professional schedule."
+    });
+  }
+}

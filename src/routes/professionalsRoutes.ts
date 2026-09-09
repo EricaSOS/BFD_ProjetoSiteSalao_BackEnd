@@ -7,6 +7,7 @@ import {
     createProfessional,
     updateProfessional, 
     updateProfessionalServices,
+    updateProfessionalSchedulesByDay,
     deleteProfessional,
     reactivateProfessional, 
     getAvailableTimesByProfessional
@@ -293,6 +294,7 @@ router.get("/:id/services", authMiddleware, listServicesByProfessional);
 router.put("/:id/services", authMiddleware, updateProfessionalServices);
 
 router.get("/:id/schedules", authMiddleware, listProfessionalSchedules);
+router.patch("/:id/schedules/:dayOfWeek", authMiddleware, updateProfessionalSchedulesByDay);
 
 router.get("/:id/available-times", getAvailableTimesByProfessional);
 
