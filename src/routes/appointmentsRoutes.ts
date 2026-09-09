@@ -198,6 +198,7 @@ const router = Router();
  * /schedule/day:
  *   get:
  *     summary: Obter agenda do dia agrupada por profissional
+ *     description: Retorna os agendamentos pendentes, confirmados e realizados do dia, agrupados por profissional.
  *     tags: [Schedule]
  *     security:
  *       - bearerAuth: []

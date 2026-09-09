@@ -409,10 +409,10 @@ export async function getDailySchedule(req: Request, res: Response) {
 
     const appointments = await db.all(
       `SELECT *
-       FROM appointments
-       WHERE date = ?
-         AND status IN ('pending', 'confirmed')
-       ORDER BY time`,
+      FROM appointments
+      WHERE date = ?
+        AND status IN ('pending', 'confirmed', 'completed')
+      ORDER BY time`,
       [date]
     );
 
