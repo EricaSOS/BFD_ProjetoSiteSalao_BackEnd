@@ -89,6 +89,16 @@ export const listAppointmentsQuerySchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.")
     .optional(),
 
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be in YYYY-MM-DD format.")
+    .optional(),
+
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format.")
+    .optional(),
+
   professionalId: z
     .string()
     .regex(/^\d+$/, "Professional id must be a number.")
@@ -100,8 +110,28 @@ export const listAppointmentsQuerySchema = z.object({
 
   status: z
     .enum(["pending", "confirmed", "cancelled", "completed"])
+    .optional(),
+
+  client: z
+    .string()
+    .trim()
+    .min(1, "Client search must contain at least 1 character.")
+    .max(100, "Client search must have at most 100 characters.")
     .optional()
-});
+
+}).refine(
+  (data) => {
+    if (data.startDate && data.endDate) {
+      return data.startDate <= data.endDate;
+    }
+
+    return true;
+  },
+  {
+    message: "Start date must be earlier than or equal to end date.",
+    path: ["endDate"]
+  }
+);
 
 export const dailyScheduleQuerySchema = z.object({
   date: z

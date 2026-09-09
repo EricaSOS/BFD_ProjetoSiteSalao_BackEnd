@@ -32,6 +32,20 @@ const router = Router();
  *           type: string
  *           example: 2026-04-10
  *       - in: query
+ *         name: startDate
+ *         required: false
+ *         description: Data inicial do período no formato YYYY-MM-DD
+ *         schema:
+ *           type: string
+ *           example: 2026-09-01
+ *       - in: query
+ *         name: endDate
+ *         required: false
+ *         description: Data final do período no formato YYYY-MM-DD
+ *         schema:
+ *           type: string
+ *           example: 2026-09-30
+ *       - in: query
  *         name: professionalId
  *         required: false
  *         description: Filtrar por ID do profissional
@@ -44,10 +58,24 @@ const router = Router();
  *         description: Filtrar por status do agendamento
  *         schema:
  *           type: string
+ *           enum:
+ *             - pending
+ *             - confirmed
+ *             - completed
+ *             - cancelled
  *           example: pending
+ *       - in: query
+ *         name: client
+ *         required: false
+ *         description: Buscar agendamentos pelo nome do cliente
+ *         schema:
+ *           type: string
+ *           example: Fulano       
  *     responses:
  *       200:
  *         description: Lista de agendamentos retornada com sucesso
+ *       400:
+ *         description: Filtros inválidos
  *       401:
  *         description: Token ausente, inválido ou expirado
  */

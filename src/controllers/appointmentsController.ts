@@ -3,7 +3,14 @@ import { getDb } from "../database/db.js";
 
 export async function listAppointments(req: Request, res: Response) {
   try {
-    const { date, professionalId, status } = req.query;
+    const {
+      date,
+      startDate,
+      endDate,
+      professionalId,
+      status,
+      client
+    } = req.query;
 
     const db = await getDb();
 
@@ -13,6 +20,16 @@ export async function listAppointments(req: Request, res: Response) {
     if (date) {
       query += ` AND date = ?`;
       params.push(date);
+    } else {
+      if (startDate) {
+        query += ` AND date >= ?`;
+        params.push(startDate);
+      }
+
+      if (endDate) {
+        query += ` AND date <= ?`;
+        params.push(endDate);
+      }
     }
 
     if (professionalId) {
@@ -25,6 +42,11 @@ export async function listAppointments(req: Request, res: Response) {
       params.push(status);
     }
 
+    if (client) {
+      query += ` AND client_name ILIKE ?`;
+      params.push(`%${client}%`);
+    }
+
     query += ` ORDER BY date, time`;
 
     const appointments = await db.all(query, params);
@@ -32,6 +54,7 @@ export async function listAppointments(req: Request, res: Response) {
     return res.status(200).json(appointments);
   } catch (error) {
     console.error("Error listing appointments:", error);
+
     return res.status(500).json({
       error: "Error listing appointments."
     });
