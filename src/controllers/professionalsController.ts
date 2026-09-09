@@ -725,3 +725,180 @@ export async function updateProfessionalSchedulesByDay(
     });
   }
 }
+
+export async function listProfessionalUnavailableDates(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+    const db = await getDb();
+
+    const professional = await db.get(
+      `SELECT id
+       FROM professionals
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    const unavailableDates = await db.all(
+      `SELECT
+         id,
+         TO_CHAR(date, 'YYYY-MM-DD') AS date,
+         TO_CHAR(start_time, 'HH24:MI') AS start_time,
+         TO_CHAR(end_time, 'HH24:MI') AS end_time,
+         reason
+       FROM professional_unavailable_dates
+       WHERE professional_id = ?
+       ORDER BY date, start_time`,
+      [id]
+    );
+
+    const result = unavailableDates.map((item: any) => ({
+      id: item.id,
+      date: item.date,
+      startTime: item.start_time,
+      endTime: item.end_time,
+      reason: item.reason
+    }));
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(
+      "Error listing professional unavailable dates:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error listing professional unavailable dates."
+    });
+  }
+}
+
+export async function createProfessionalUnavailableDate(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+    const { date, startTime, endTime, reason } = req.body;
+
+    if (
+      typeof date !== "string" ||
+      typeof startTime !== "string" ||
+      typeof endTime !== "string"
+    ) {
+      return res.status(400).json({
+        error: "Date, start time and end time are required."
+      });
+    }
+
+    if (startTime >= endTime) {
+      return res.status(400).json({
+        error: "Start time must be earlier than end time."
+      });
+    }
+
+    const db = await getDb();
+
+    const professional = await db.get(
+      `SELECT id
+       FROM professionals
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    const result = await db.run(
+      `INSERT INTO professional_unavailable_dates (
+         professional_id,
+         date,
+         start_time,
+         end_time,
+         reason
+       )
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        id,
+        date,
+        startTime,
+        endTime,
+        reason ?? null
+      ]
+    );
+
+    return res.status(201).json({
+      message: "Professional unavailable date created successfully.",
+      id: result.lastID
+    });
+  } catch (error) {
+    console.error(
+      "Error creating professional unavailable date:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error creating professional unavailable date."
+    });
+  }
+}
+
+export async function deleteProfessionalUnavailableDate(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id, unavailableId } = req.params;
+    const db = await getDb();
+
+    const professional = await db.get(
+      `SELECT id
+       FROM professionals
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found."
+      });
+    }
+
+    const result = await db.run(
+      `DELETE FROM professional_unavailable_dates
+       WHERE id = ?
+         AND professional_id = ?`,
+      [unavailableId, id]
+    );
+
+    if (!result.changes) {
+      return res.status(404).json({
+        error: "Professional unavailable date not found."
+      });
+    }
+
+    return res.status(200).json({
+      message: "Professional unavailable date deleted successfully."
+    });
+  } catch (error) {
+    console.error(
+      "Error deleting professional unavailable date:",
+      error
+    );
+
+    return res.status(500).json({
+      error: "Error deleting professional unavailable date."
+    });
+  }
+}

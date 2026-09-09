@@ -10,7 +10,10 @@ import {
     updateProfessionalSchedulesByDay,
     deleteProfessional,
     reactivateProfessional, 
-    getAvailableTimesByProfessional
+    getAvailableTimesByProfessional,
+    listProfessionalUnavailableDates,
+    createProfessionalUnavailableDate,
+    deleteProfessionalUnavailableDate
 } from "../controllers/professionalsController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -283,6 +286,198 @@ const router = Router();
  *       500:
  *         description: Erro ao consultar horários disponíveis
  */
+/**
+ * @swagger
+ * /professionals/{id}/unavailable-dates:
+ *   get:
+ *     summary: Lista as indisponibilidades de um profissional
+ *     tags:
+ *       - Professionals
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do profissional
+ *     responses:
+ *       200:
+ *         description: Lista de indisponibilidades retornada com sucesso
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ *
+ *   post:
+ *     summary: Cadastra uma indisponibilidade para um profissional
+ *     tags:
+ *       - Professionals
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do profissional
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - date
+ *               - startTime
+ *               - endTime
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-09-10"
+ *               startTime:
+ *                 type: string
+ *                 example: "14:00"
+ *               endTime:
+ *                 type: string
+ *                 example: "18:00"
+ *               reason:
+ *                 type: string
+ *                 example: "Treinamento"
+ *     responses:
+ *       201:
+ *         description: Indisponibilidade cadastrada com sucesso
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+/**
+ * @swagger
+ * /professionals/{id}/schedules:
+ *   get:
+ *     summary: Listar horários padrão do profissional
+ *     description: Retorna a jornada semanal recorrente cadastrada para o profissional. Rota administrativa protegida por JWT.
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do profissional
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Horários do profissional retornados com sucesso
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro ao listar horários do profissional
+ *
+ * /professionals/{id}/schedules/{dayOfWeek}:
+ *   patch:
+ *     summary: Atualizar horários de um dia da semana
+ *     description: Atualiza somente os horários do dia da semana informado, sem alterar os demais dias da jornada padrão do profissional. Rota administrativa protegida por JWT.
+ *     tags: [Professionals]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do profissional
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - in: path
+ *         name: dayOfWeek
+ *         required: true
+ *         description: Dia da semana, sendo 1 domingo, 2 segunda-feira, 3 terça-feira, 4 quarta-feira, 5 quinta-feira, 6 sexta-feira e 7 sábado
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 7
+ *           example: 2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - schedules
+ *             properties:
+ *               schedules:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - startTime
+ *                     - endTime
+ *                   properties:
+ *                     startTime:
+ *                       type: string
+ *                       example: "08:00"
+ *                     endTime:
+ *                       type: string
+ *                       example: "12:00"
+ *                 example:
+ *                   - startTime: "08:00"
+ *                     endTime: "12:00"
+ *                   - startTime: "14:00"
+ *                     endTime: "18:00"
+ *     responses:
+ *       200:
+ *         description: Horários do dia atualizados com sucesso
+ *       400:
+ *         description: Dia da semana ou horários inválidos
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro ao atualizar horários do profissional
+ */
+/**
+ * @swagger
+ * /professionals/{id}/unavailable-dates/{unavailableId}:
+ *   delete:
+ *     summary: Exclui uma indisponibilidade de um profissional
+ *     tags:
+ *       - Professionals
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do profissional
+ *       - in: path
+ *         name: unavailableId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID da indisponibilidade
+ *     responses:
+ *       200:
+ *         description: Indisponibilidade excluída com sucesso
+ *       404:
+ *         description: Profissional ou indisponibilidade não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 
 // Rotas administrativas protegidas
 router.get("/admin", authMiddleware, listAllProfessionals);
@@ -301,5 +496,9 @@ router.get("/:id/available-times", getAvailableTimesByProfessional);
 router.patch("/:id/reactivate", authMiddleware, reactivateProfessional);
 router.patch("/:id", authMiddleware, updateProfessional);
 router.delete("/:id", authMiddleware, deleteProfessional);
+
+router.get("/:id/unavailable-dates", authMiddleware, listProfessionalUnavailableDates);
+router.post("/:id/unavailable-dates", authMiddleware, createProfessionalUnavailableDate);
+router.delete("/:id/unavailable-dates/:unavailableId", authMiddleware, deleteProfessionalUnavailableDate);
 
 export default router;
