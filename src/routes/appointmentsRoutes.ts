@@ -3,7 +3,14 @@ import { createAppointmentSchema, appointmentIdParamsSchema, cancelAppointmentSc
     listAppointmentsQuerySchema, dailyScheduleQuerySchema
  } from "../validations/appointmentValidation.js";
 import { Router } from "express";
-import {listAppointments, createAppointment, cancelAppointment, confirmAppointment, getDailySchedule} from "../controllers/appointmentsController.js";
+import {
+    listAppointments, 
+    createAppointment, 
+    cancelAppointment, 
+    confirmAppointment, 
+    completeAppointment, 
+    getDailySchedule
+        } from "../controllers/appointmentsController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -115,7 +122,7 @@ const router = Router();
  *       200:
  *         description: Agendamento confirmado com sucesso
  *       400:
- *         description: ID inválido, agendamento já confirmado ou cancelado
+ *         description: ID inválido ou agendamento não está pendente
  *       401:
  *         description: Token ausente, inválido ou expirado
  *       404:
@@ -152,13 +159,12 @@ const router = Router();
  *       200:
  *         description: Agendamento cancelado com sucesso
  *       400:
- *         description: ID inválido, dados inválidos ou agendamento já cancelado
+ *         description: ID inválido, dados inválidos, agendamento já cancelado ou atendimento já realizado
  *       401:
  *         description: Token ausente, inválido ou expirado
  *       404:
  *         description: Agendamento não encontrado 
 */
-
 /**
  * @swagger
  * /schedule/day:
@@ -183,11 +189,41 @@ const router = Router();
  *       401:
  *         description: Token ausente, inválido ou expirado
  */
+/**
+ * @swagger
+ * /appointments/{id}/complete:
+ *   patch:
+ *     summary: Marcar um atendimento como realizado
+ *     description: Marca como realizado um agendamento previamente confirmado. Rota administrativa protegida por JWT.
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do agendamento
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Atendimento marcado como realizado com sucesso
+ *       400:
+ *         description: ID inválido ou agendamento não está no status confirmado
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro ao marcar atendimento como realizado
+ */
 
 router.get("/appointments", authMiddleware, validateRequest(listAppointmentsQuerySchema, "query"), listAppointments);
 router.post("/appointments", validateRequest(createAppointmentSchema), createAppointment);
 router.patch("/appointments/:id/confirm", authMiddleware, validateRequest(appointmentIdParamsSchema, "params"), confirmAppointment);
 router.patch("/appointments/:id/cancel", authMiddleware, validateRequest(appointmentIdParamsSchema,"params"), validateRequest(cancelAppointmentSchema), cancelAppointment);
+router.patch("/appointments/:id/complete", authMiddleware, validateRequest(appointmentIdParamsSchema, "params"), completeAppointment);
 router.get("/schedule/day", authMiddleware, validateRequest(dailyScheduleQuerySchema, "query"), getDailySchedule);
 
 export default router;

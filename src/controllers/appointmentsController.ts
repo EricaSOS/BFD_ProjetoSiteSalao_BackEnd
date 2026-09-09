@@ -273,15 +273,15 @@ export async function confirmAppointment(req: Request, res: Response) {
       return res.status(404).json({ error: "Appointment not found." });
     }
 
-    if (appointment.status === "cancelled") {
-      return res.status(400).json({
-        error: "Cancelled appointments cannot be confirmed."
-      });
-    }
-
     if (appointment.status === "confirmed") {
       return res.status(400).json({
         error: "Appointment is already confirmed."
+      });
+    }
+
+    if (appointment.status !== "pending") {
+      return res.status(400).json({
+        error: "Only pending appointments can be confirmed."
       });
     }
 
@@ -328,6 +328,12 @@ export async function cancelAppointment(req: Request, res: Response) {
     if (appointment.status === "cancelled") {
       return res.status(400).json({
         error: "Appointment is already cancelled."
+      });
+    }
+
+    if (appointment.status === "completed") {
+      return res.status(400).json({
+        error: "Completed appointments cannot be cancelled."
       });
     }
 
@@ -415,6 +421,63 @@ export async function getDailySchedule(req: Request, res: Response) {
     console.error("Error fetching daily schedule:", error);
     return res.status(500).json({
       error: "Error fetching daily schedule."
+    });
+  }
+}
+
+export async function completeAppointment(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+
+    const db = await getDb();
+
+    const appointment = await db.get(
+      `SELECT * FROM appointments WHERE id = ?`,
+      [id]
+    );
+
+    if (!appointment) {
+      return res.status(404).json({
+        error: "Appointment not found."
+      });
+    }
+
+    if (appointment.status === "completed") {
+      return res.status(400).json({
+        error: "Appointment is already completed."
+      });
+    }
+
+    if (appointment.status !== "confirmed") {
+      return res.status(400).json({
+        error: "Only confirmed appointments can be completed."
+      });
+    }
+
+    await db.run(
+      `UPDATE appointments
+       SET status = ?
+       WHERE id = ?`,
+      ["completed", id]
+    );
+
+    const updatedAppointment = await db.get(
+      `SELECT * FROM appointments WHERE id = ?`,
+      [id]
+    );
+
+    return res.status(200).json({
+      message: "Appointment completed successfully.",
+      appointment: updatedAppointment
+    });
+  } catch (error) {
+    console.error("Error completing appointment:", error);
+
+    return res.status(500).json({
+      error: "Error completing appointment."
     });
   }
 }
