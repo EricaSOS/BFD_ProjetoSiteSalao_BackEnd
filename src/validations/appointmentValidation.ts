@@ -138,3 +138,10 @@ export const dailyScheduleQuerySchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format.")
 });
+
+export const changeAppointmentProfessionalSchema = z.object({
+  professionalId: z
+    .number()
+    .int("Professional id must be an integer.")
+    .positive("Professional id must be positive.")
+});

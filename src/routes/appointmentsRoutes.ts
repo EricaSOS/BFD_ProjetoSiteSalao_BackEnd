@@ -1,7 +1,12 @@
 import { validateRequest } from "../middlewares/validateRequest.js";
-import { createAppointmentSchema, appointmentIdParamsSchema, cancelAppointmentSchema,
-    listAppointmentsQuerySchema, dailyScheduleQuerySchema
- } from "../validations/appointmentValidation.js";
+import { 
+    createAppointmentSchema, 
+    appointmentIdParamsSchema, 
+    cancelAppointmentSchema,
+    listAppointmentsQuerySchema, 
+    dailyScheduleQuerySchema,
+    changeAppointmentProfessionalSchema
+    } from "../validations/appointmentValidation.js";
 import { Router } from "express";
 import {
     listAppointments, 
@@ -9,8 +14,9 @@ import {
     cancelAppointment, 
     confirmAppointment, 
     completeAppointment, 
-    getDailySchedule
-        } from "../controllers/appointmentsController.js";
+    getDailySchedule,
+    changeAppointmentProfessional
+    } from "../controllers/appointmentsController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -247,12 +253,60 @@ const router = Router();
  *       500:
  *         description: Erro ao marcar atendimento como realizado
  */
+/**
+ * @swagger
+ * /appointments/{id}/professional:
+ *   patch:
+ *     summary: Alterar profissional do atendimento
+ *     description: >
+ *       Altera o profissional responsável por um agendamento pendente ou
+ *       confirmado. O novo profissional deve estar ativo, realizar o serviço
+ *       agendado, possuir horário de trabalho compatível e estar disponível
+ *       na data e horário do atendimento.
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID do agendamento
+ *         schema:
+ *           type: integer
+ *           example: 25
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - professionalId
+ *             properties:
+ *               professionalId:
+ *                 type: integer
+ *                 example: 3
+ *     responses:
+ *       200:
+ *         description: Profissional alterado com sucesso
+ *       400:
+ *         description: >
+ *           Alteração não permitida, profissional incompatível com o serviço,
+ *           fora do horário de trabalho, indisponível ou já ocupado
+ *       401:
+ *         description: Token ausente, inválido ou expirado
+ *       404:
+ *         description: Agendamento ou profissional não encontrado
+ *       500:
+ *         description: Erro ao alterar profissional
+ */
 
 router.get("/appointments", authMiddleware, validateRequest(listAppointmentsQuerySchema, "query"), listAppointments);
 router.post("/appointments", validateRequest(createAppointmentSchema), createAppointment);
 router.patch("/appointments/:id/confirm", authMiddleware, validateRequest(appointmentIdParamsSchema, "params"), confirmAppointment);
 router.patch("/appointments/:id/cancel", authMiddleware, validateRequest(appointmentIdParamsSchema,"params"), validateRequest(cancelAppointmentSchema), cancelAppointment);
 router.patch("/appointments/:id/complete", authMiddleware, validateRequest(appointmentIdParamsSchema, "params"), completeAppointment);
+router.patch("/appointments/:id/professional", authMiddleware, validateRequest(appointmentIdParamsSchema, "params"), validateRequest(changeAppointmentProfessionalSchema), changeAppointmentProfessional);
 router.get("/schedule/day", authMiddleware, validateRequest(dailyScheduleQuerySchema, "query"), getDailySchedule);
 
 export default router;

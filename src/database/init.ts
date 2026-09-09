@@ -59,6 +59,18 @@ export async function initDb() {
       cancellation_reason TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      appointment_id INTEGER NOT NULL REFERENCES appointments(id),
+      professional_id INTEGER NOT NULL REFERENCES professionals(id),
+      amount NUMERIC(10,2) NOT NULL,
+      payment_method TEXT NOT NULL,
+      description TEXT,
+      date DATE NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS professional_schedules (
       id SERIAL PRIMARY KEY,
       professional_id INTEGER NOT NULL REFERENCES professionals(id),
@@ -92,14 +104,7 @@ export async function initDb() {
       date DATE NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
-
-    CREATE TABLE IF NOT EXISTS expenses (
-      id SERIAL PRIMARY KEY,
-      description TEXT NOT NULL,
-      amount NUMERIC(10,2) NOT NULL,
-      date DATE NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+   
   `);
 
   console.log("Database initialized successfully.");

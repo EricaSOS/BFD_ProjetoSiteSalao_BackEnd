@@ -504,3 +504,178 @@ export async function completeAppointment(
     });
   }
 }
+
+export async function changeAppointmentProfessional(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { id } = req.params;
+    const { professionalId } = req.body;
+
+    const db = await getDb();
+
+    const appointment = await db.get(
+      `SELECT *
+       FROM appointments
+       WHERE id = ?`,
+      [id]
+    );
+
+    if (!appointment) {
+      return res.status(404).json({
+        error: "Appointment not found."
+      });
+    }
+
+    if (!["pending", "confirmed"].includes(appointment.status)) {
+      return res.status(400).json({
+        error:
+          "Only pending or confirmed appointments can have their professional changed."
+      });
+    }
+
+    if (appointment.professional_id === professionalId) {
+      return res.status(400).json({
+        error: "The selected professional is already assigned to this appointment."
+      });
+    }
+
+    const professional = await db.get(
+      `SELECT *
+       FROM professionals
+       WHERE id = ?
+         AND is_active = TRUE`,
+      [professionalId]
+    );
+
+    if (!professional) {
+      return res.status(404).json({
+        error: "Professional not found or inactive."
+      });
+    }
+
+    const professionalService = await db.get(
+      `SELECT id
+       FROM professional_services
+       WHERE professional_id = ?
+         AND service_id = ?`,
+      [professionalId, appointment.service_id]
+    );
+
+    if (!professionalService) {
+      return res.status(400).json({
+        error: "This professional does not provide the appointment service."
+      });
+    }
+
+    const appointmentDateValue =
+      typeof appointment.date === "string"
+        ? appointment.date.substring(0, 10)
+        : new Date(appointment.date).toISOString().substring(0, 10);
+
+    const [year, month, day] = appointmentDateValue
+      .split("-")
+      .map(Number);
+
+    const appointmentDate = new Date(year, month - 1, day);
+    const dayOfWeek = appointmentDate.getDay() + 1;
+
+    const schedule = await db.get(
+      `SELECT id
+       FROM professional_schedules
+       WHERE professional_id = ?
+         AND day_of_week = ?
+         AND is_active = TRUE
+         AND ?::TIME >= start_time
+         AND ?::TIME < end_time`,
+      [
+        professionalId,
+        dayOfWeek,
+        appointment.time,
+        appointment.time
+      ]
+    );
+
+    if (!schedule) {
+      return res.status(400).json({
+        error:
+          "The appointment time is outside the selected professional's working hours."
+      });
+    }
+
+    const professionalUnavailable = await db.get(
+      `SELECT id
+       FROM professional_unavailable_dates
+       WHERE professional_id = ?
+         AND date = ?
+         AND ?::TIME >= start_time
+         AND ?::TIME < end_time`,
+      [
+        professionalId,
+        appointmentDateValue,
+        appointment.time,
+        appointment.time
+      ]
+    );
+
+    if (professionalUnavailable) {
+      return res.status(400).json({
+        error: "The selected professional is unavailable at the appointment time."
+      });
+    }
+
+    const conflictingAppointment = await db.get(
+      `SELECT id
+       FROM appointments
+       WHERE professional_id = ?
+         AND date = ?
+         AND time = ?
+         AND status IN ('pending', 'confirmed')
+         AND id <> ?`,
+      [
+        professionalId,
+        appointmentDateValue,
+        appointment.time,
+        id
+      ]
+    );
+
+    if (conflictingAppointment) {
+      return res.status(400).json({
+        error:
+          "The selected professional already has an appointment at this time."
+      });
+    }
+
+    await db.run(
+      `UPDATE appointments
+       SET professional_id = ?,
+           professional_name = ?
+       WHERE id = ?`,
+      [
+        professional.id,
+        professional.name,
+        id
+      ]
+    );
+
+    const updatedAppointment = await db.get(
+      `SELECT *
+       FROM appointments
+       WHERE id = ?`,
+      [id]
+    );
+
+    return res.status(200).json({
+      message: "Appointment professional changed successfully.",
+      appointment: updatedAppointment
+    });
+  } catch (error) {
+    console.error("Error changing appointment professional:", error);
+
+    return res.status(500).json({
+      error: "Error changing appointment professional."
+    });
+  }
+}
