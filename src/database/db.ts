@@ -75,3 +75,86 @@ export async function getDb() {
     }
   };
 }
+
+export async function withTransaction<T>(
+      callback: (db: {
+        get: (query: string, params?: unknown[]) => Promise<any>;
+        all: (query: string, params?: unknown[]) => Promise<any[]>;
+        run: (
+          query: string,
+          params?: unknown[]
+        ) => Promise<{
+          lastID: any;
+          changes: number | null;
+        }>;
+        query: (query: string, params?: unknown[]) => Promise<any>;
+      }) => Promise<T>
+    ): Promise<T> {
+      const client = await pool.connect();
+
+      const transactionDb = {
+        async get(query: string, params: unknown[] = []) {
+          const result = await client.query(
+            prepareQuery(query),
+            params
+          );
+
+          return result.rows[0];
+        },
+
+        async all(query: string, params: unknown[] = []) {
+          const result = await client.query(
+            prepareQuery(query),
+            params
+          );
+
+          return result.rows;
+        },
+
+        async run(query: string, params: unknown[] = []) {
+          let sql = prepareQuery(query);
+
+          const isInsert = sql
+            .trim()
+            .toLowerCase()
+            .startsWith("insert");
+
+          const hasReturning = sql
+            .toLowerCase()
+            .includes("returning");
+
+          if (isInsert && !hasReturning) {
+            sql += " RETURNING id";
+          }
+
+          const result = await client.query(sql, params);
+
+          return {
+            lastID: result.rows[0]?.id,
+            changes: result.rowCount
+          };
+        },
+
+        async query(query: string, params: unknown[] = []) {
+          return client.query(
+            prepareQuery(query),
+            params
+          );
+        }
+      };
+
+      try {
+        await client.query("BEGIN");
+
+        const result = await callback(transactionDb);
+
+        await client.query("COMMIT");
+
+        return result;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+}

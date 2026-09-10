@@ -61,14 +61,43 @@ export async function initDb() {
 
     CREATE TABLE IF NOT EXISTS payments (
       id SERIAL PRIMARY KEY,
-      appointment_id INTEGER NOT NULL REFERENCES appointments(id),
-      professional_id INTEGER NOT NULL REFERENCES professionals(id),
+
+      appointment_id INTEGER NOT NULL UNIQUE
+        REFERENCES appointments(id),
+
+      professional_id INTEGER NOT NULL
+        REFERENCES professionals(id),
+
       amount NUMERIC(10,2) NOT NULL,
-      payment_method TEXT NOT NULL,
+
+      payment_method TEXT,
+
       description TEXT,
-      date DATE NOT NULL,
+
+      date DATE,
+
+      status TEXT NOT NULL DEFAULT 'pending',
+
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP
+
+      updated_at TIMESTAMP,
+
+      CONSTRAINT payments_status_check
+        CHECK (
+          status IN ('pending', 'confirmed', 'cancelled')
+        ),
+
+      CONSTRAINT payments_method_check
+        CHECK (
+          payment_method IS NULL
+          OR payment_method IN (
+            'pix',
+            'cash',
+            'credit_card',
+            'debit_card',
+            'other'
+          )
+        )
     );
 
     CREATE TABLE IF NOT EXISTS professional_schedules (
@@ -104,7 +133,15 @@ export async function initDb() {
       date DATE NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
-   
+
+    CREATE INDEX IF NOT EXISTS idx_payments_status
+      ON payments(status);
+
+    CREATE INDEX IF NOT EXISTS idx_payments_date
+      ON payments(date);
+
+    CREATE INDEX IF NOT EXISTS idx_payments_professional_id
+      ON payments(professional_id);   
   `);
 
   console.log("Database initialized successfully.");

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getDb } from "../database/db.js";
+import { getDb, withTransaction } from "../database/db.js";
 
 export async function listAppointments(req: Request, res: Response) {
   try {
@@ -455,41 +455,69 @@ export async function completeAppointment(
   try {
     const { id } = req.params;
 
-    const db = await getDb();
+    const updatedAppointment = await withTransaction(
+      async (db) => {
+        const appointment = await db.get(
+          `SELECT *
+           FROM appointments
+           WHERE id = ?`,
+          [id]
+        );
 
-    const appointment = await db.get(
-      `SELECT * FROM appointments WHERE id = ?`,
-      [id]
-    );
+        if (!appointment) {
+          const error = new Error(
+            "APPOINTMENT_NOT_FOUND"
+          );
 
-    if (!appointment) {
-      return res.status(404).json({
-        error: "Appointment not found."
-      });
-    }
+          throw error;
+        }
 
-    if (appointment.status === "completed") {
-      return res.status(400).json({
-        error: "Appointment is already completed."
-      });
-    }
+        if (appointment.status === "completed") {
+          const error = new Error(
+            "APPOINTMENT_ALREADY_COMPLETED"
+          );
 
-    if (appointment.status !== "confirmed") {
-      return res.status(400).json({
-        error: "Only confirmed appointments can be completed."
-      });
-    }
+          throw error;
+        }
 
-    await db.run(
-      `UPDATE appointments
-       SET status = ?
-       WHERE id = ?`,
-      ["completed", id]
-    );
+        if (appointment.status !== "confirmed") {
+          const error = new Error(
+            "APPOINTMENT_NOT_CONFIRMED"
+          );
 
-    const updatedAppointment = await db.get(
-      `SELECT * FROM appointments WHERE id = ?`,
-      [id]
+          throw error;
+        }
+
+        await db.run(
+          `UPDATE appointments
+           SET status = ?
+           WHERE id = ?`,
+          ["completed", id]
+        );
+
+        await db.run(
+          `INSERT INTO payments (
+             appointment_id,
+             professional_id,
+             amount,
+             status
+           )
+           VALUES (?, ?, ?, ?)`,
+          [
+            appointment.id,
+            appointment.professional_id,
+            appointment.price,
+            "pending"
+          ]
+        );
+
+        return db.get(
+          `SELECT *
+           FROM appointments
+           WHERE id = ?`,
+          [id]
+        );
+      }
     );
 
     return res.status(200).json({
@@ -497,7 +525,37 @@ export async function completeAppointment(
       appointment: updatedAppointment
     });
   } catch (error) {
-    console.error("Error completing appointment:", error);
+    if (
+      error instanceof Error &&
+      error.message === "APPOINTMENT_NOT_FOUND"
+    ) {
+      return res.status(404).json({
+        error: "Appointment not found."
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      error.message === "APPOINTMENT_ALREADY_COMPLETED"
+    ) {
+      return res.status(400).json({
+        error: "Appointment is already completed."
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      error.message === "APPOINTMENT_NOT_CONFIRMED"
+    ) {
+      return res.status(400).json({
+        error: "Only confirmed appointments can be completed."
+      });
+    }
+
+    console.error(
+      "Error completing appointment:",
+      error
+    );
 
     return res.status(500).json({
       error: "Error completing appointment."
